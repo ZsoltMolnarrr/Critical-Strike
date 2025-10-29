@@ -16,10 +16,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.critical_strike.fabric.ExampleModFabric"
+      "net.critical_strike.fabric.FabricMod"
     ],
     "client": [
-      "net.critical_strike.fabric.client.ExampleModFabricClient"
+      "net.critical_strike.fabric.client.FabricClientMod"
     ]
   },
   "mixins": [
