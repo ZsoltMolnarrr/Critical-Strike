@@ -3,6 +3,7 @@ package net.critical_strike.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
+import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.api.CriticalStrikeAttributes;
 import net.critical_strike.internal.CritLogic;
 import net.critical_strike.internal.CriticalStriker;
@@ -53,18 +54,17 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
     public boolean rng_shouldDealCriticalHit() {
         var player = (PlayerEntity)(Object)this;
 
-        // Disabled batching
-//        if (critical_chance_time != player.age) {
-//            critical_chance_time = player.age;
-//            var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.entry);
-//            var chance = CriticalStrikeAttributes.CHANCE.asChance(value);
-//            critical_strike_active = player.getRandom().nextFloat() < chance;
-//        }
-//        return critical_strike_active;
-
-        var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.entry);
-        var chance = CriticalStrikeAttributes.CHANCE.asChance(value);
-        return critical_strike_active = player.getRandom().nextFloat() < chance;
+        if (CriticalStrikeMod.config.value.enable_critical_strike_batching) {
+            if (critical_chance_time != player.age) {
+                var chance = rng_criticalChance();
+                critical_strike_active = player.getRandom().nextFloat() < chance;
+                critical_chance_time = player.age;
+            }
+            return critical_strike_active;
+        } else {
+            var chance = rng_criticalChance();
+            return player.getRandom().nextFloat() < chance;
+        }
     }
 
     public double rng_criticalChance() {
@@ -100,11 +100,18 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
             )
     )
     private boolean applyCriticalStrikeDamage(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {
+        if (!CriticalStrikeMod.config.value.enable_melee_criticals) {
+            return original.call(instance, source, amount);
+        }
+
         var critter = (CriticalStriker)(Object)this;
         var crit = CritLogic.modifyDamage(critter, source, amount);
         if (crit != null) {
             var result = original.call(instance, crit.source(), crit.amount());
-            this.addEnchantedHitParticles(instance);
+            if (result) {
+                this.addEnchantedHitParticles(instance);
+                CritLogic.playFxAt(instance, 0.75F);
+            }
             return result;
         } else {
             return original.call(instance, source, amount);

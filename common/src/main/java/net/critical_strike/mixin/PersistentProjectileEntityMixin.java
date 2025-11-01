@@ -2,6 +2,7 @@ package net.critical_strike.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.internal.CritLogic;
 import net.critical_strike.internal.CriticalStriker;
 import net.minecraft.entity.Entity;
@@ -12,8 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(PersistentProjectileEntity.class)
 public class PersistentProjectileEntityMixin {
-
-
     @WrapOperation(
             method = "onEntityHit",
             at = @At(
@@ -22,12 +21,19 @@ public class PersistentProjectileEntityMixin {
             )
     )
     private boolean wrapDamageEntity(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {
-        var projectile = (PersistentProjectileEntity)(Object)this;
+        if (!CriticalStrikeMod.config.value.enable_ranged_criticals) {
+            return original.call(instance, source, amount);
+        }
 
+        var projectile = (PersistentProjectileEntity)(Object)this;
         if (projectile.getOwner() instanceof CriticalStriker critter) {
             var crit = CritLogic.modifyDamage(critter, source, amount);
             if (crit != null) {
-                return original.call(instance, crit.source(), crit.amount());
+                var result = original.call(instance, crit.source(), crit.amount());
+                if (result) {
+                    CritLogic.playFxAt(instance, 1F);
+                }
+                return result;
             }
         }
         return original.call(instance, source, amount);

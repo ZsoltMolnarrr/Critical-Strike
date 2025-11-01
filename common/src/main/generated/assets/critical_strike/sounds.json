@@ -1,0 +1,8 @@
+{
+  "critical_hit": {
+    "sounds": [
+      "critical_strike:critical_hit_1",
+      "critical_strike:critical_hit_2"
+    ]
+  }
+}
