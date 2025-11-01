@@ -5,8 +5,8 @@ import net.neoforged.fml.common.Mod;
 import net.critical_strike.CriticalStrikeMod;
 
 @Mod(CriticalStrikeMod.ID)
-public final class ExampleModNeoForge {
-    public ExampleModNeoForge() {
+public final class NeoForgeMod {
+    public NeoForgeMod() {
         // Run our common setup.
         CriticalStrikeMod.init();
     }

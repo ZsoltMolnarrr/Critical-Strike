@@ -20,6 +20,9 @@
     ],
     "client": [
       "net.critical_strike.fabric.client.FabricClientMod"
+    ],
+    "fabric-datagen": [
+      "net.critical_strike.fabric.datagen.CriticalStrikeDataGenerator"
     ]
   },
   "mixins": [

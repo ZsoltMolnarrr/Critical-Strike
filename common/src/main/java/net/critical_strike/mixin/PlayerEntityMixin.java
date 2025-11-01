@@ -4,6 +4,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
 import net.critical_strike.api.CriticalStrikeAttributes;
+import net.critical_strike.internal.CritLogic;
+import net.critical_strike.internal.CriticalStriker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.damage.DamageSource;
@@ -18,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
-public abstract class PlayerEntityMixin {
+public abstract class PlayerEntityMixin implements CriticalStriker {
 
     @Shadow public abstract void addCritParticles(Entity target);
 
@@ -48,16 +50,35 @@ public abstract class PlayerEntityMixin {
 
     private int critical_chance_time = 0;
     private boolean critical_strike_active = false;
-    private boolean isCriticalStrikeActive() {
+    public boolean rng_shouldDealCriticalHit() {
         var player = (PlayerEntity)(Object)this;
-        if (critical_chance_time != player.age) {
-            critical_chance_time = player.age;
-            var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.entry);
-            var chance = CriticalStrikeAttributes.CHANCE.asChance(value);
-            critical_strike_active = player.getRandom().nextFloat() < chance;
-        }
-        return critical_strike_active;
+
+        // Disabled batching
+//        if (critical_chance_time != player.age) {
+//            critical_chance_time = player.age;
+//            var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.entry);
+//            var chance = CriticalStrikeAttributes.CHANCE.asChance(value);
+//            critical_strike_active = player.getRandom().nextFloat() < chance;
+//        }
+//        return critical_strike_active;
+
+        var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.entry);
+        var chance = CriticalStrikeAttributes.CHANCE.asChance(value);
+        return critical_strike_active = player.getRandom().nextFloat() < chance;
     }
+
+    public double rng_criticalChance() {
+        var player = (PlayerEntity)(Object)this;
+        var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.entry);
+        return CriticalStrikeAttributes.CHANCE.asChance(value);
+    }
+
+    public double rng_criticalDamageMultiplier() {
+        var player = (PlayerEntity)(Object)this;
+        var value = player.getAttributeValue(CriticalStrikeAttributes.DAMAGE.entry);
+        return CriticalStrikeAttributes.DAMAGE.asMultiplier(value);
+    }
+
 
     @WrapOperation(
             method = "attack",
@@ -79,16 +100,14 @@ public abstract class PlayerEntityMixin {
             )
     )
     private boolean applyCriticalStrikeDamage(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {
-        var isCritical = isCriticalStrikeActive();
-        if (isCritical) {
-            var player = (PlayerEntity)(Object)this;
-            var bonusMultiplier = player.getAttributeValue(CriticalStrikeAttributes.DAMAGE.entry);
-            amount *= (float) CriticalStrikeAttributes.DAMAGE.asMultiplier(bonusMultiplier);
-        }
-        var result = original.call(instance, source, amount);
-        if (isCritical) {
+        var critter = (CriticalStriker)(Object)this;
+        var crit = CritLogic.modifyDamage(critter, source, amount);
+        if (crit != null) {
+            var result = original.call(instance, crit.source(), crit.amount());
             this.addEnchantedHitParticles(instance);
+            return result;
+        } else {
+            return original.call(instance, source, amount);
         }
-        return result;
     }
 }

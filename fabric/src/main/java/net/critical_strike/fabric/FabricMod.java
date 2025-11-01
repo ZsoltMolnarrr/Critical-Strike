@@ -12,6 +12,7 @@ public final class FabricMod implements ModInitializer {
         // Proceed with mild caution.
 
         // Run our common setup.
+        CriticalStrikeMod.registerSounds();
         CriticalStrikeMod.init();
     }
 }
