@@ -1,19 +1,19 @@
 package net.critical_strike.internal;
 
+import net.critical_strike.api.CriticalDamageSource;
 import net.critical_strike.fx.CriticalStrikeSounds;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.sound.SoundCategory;
+import org.jetbrains.annotations.Nullable;
 
 public class CritLogic {
     public record Result(DamageSource source, float amount) {}
-    public static Result modifyDamage(CriticalStriker critter, DamageSource source, float amount) {
+    @Nullable public static Result modifyDamage(CriticalStriker critter, DamageSource source, float amount) {
         var isCritical = critter.rng_shouldDealCriticalHit();
         if (isCritical) {
             var bonusMultiplier = critter.rng_criticalDamageMultiplier();
-
-            // TODO: modify DamageSource - set critical flag
-
+            ((CriticalDamageSource)source).rng_setCritical(true);
             return new Result(source, amount * (float) bonusMultiplier);
         }
         return null;
