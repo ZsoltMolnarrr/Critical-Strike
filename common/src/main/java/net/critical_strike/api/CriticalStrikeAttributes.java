@@ -24,6 +24,7 @@ public class CriticalStrikeAttributes {
         return entry;
     }
 
+    public record Translations(String name) { }
     public static class Entry {
         public final Identifier id;
         public final String translationKey;
@@ -31,6 +32,7 @@ public class CriticalStrikeAttributes {
         public final double baseValue;
         @Nullable public RegistryEntry<EntityAttribute> entry;
         @Nullable public EntityAttributeModifier innateModifier;
+        @Nullable  public Translations translations;
 
         public Entry(String name, double minValue, double baseValue, boolean tracked) {
             this.id = Identifier.of(NAMESPACE, name);
@@ -56,10 +58,17 @@ public class CriticalStrikeAttributes {
             innateModifier = new EntityAttributeModifier(AttributeIdentifiers.INNATE_BONUS, value, operation);
             return this;
         }
+
+        public Entry translations(String name) {
+            this.translations = new Translations(name);
+            return this;
+        }
     }
 
     public static final Entry CHANCE = entry("chance", 100, 100, false)
+            .translations("Critical Hit Chance")
             .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.05F);
     public static final Entry DAMAGE = entry("damage", 100, 100, false)
+            .translations("Critical Hit Damage")
             .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.5F);
 }
