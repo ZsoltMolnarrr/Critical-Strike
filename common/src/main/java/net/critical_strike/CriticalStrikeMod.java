@@ -13,6 +13,8 @@ public final class CriticalStrikeMod {
             .sanitize(true)
             .build();
 
+    public static final int CRIT_PACKET_CODE = 43;
+
     public static void init() {
         config.refresh();
     }

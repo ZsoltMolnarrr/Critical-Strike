@@ -21,7 +21,8 @@ public class PersistentProjectileEntityMixin {
             )
     )
     private boolean wrapDamageEntity(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {
-        if (!CriticalStrikeMod.config.value.enable_ranged_criticals) {
+        var config = CriticalStrikeMod.config.value;
+        if (!config.enable_ranged_criticals) {
             return original.call(instance, source, amount);
         }
 
@@ -31,7 +32,7 @@ public class PersistentProjectileEntityMixin {
             if (crit != null) {
                 var result = original.call(instance, crit.source(), crit.amount());
                 if (result) {
-                    CritLogic.playFxAt(instance, 1F);
+                    CritLogic.playFxAt(instance, config.sound_ranged_crit_volume);
                 }
                 return result;
             }

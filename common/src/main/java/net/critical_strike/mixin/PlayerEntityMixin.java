@@ -14,7 +14,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -22,10 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin implements CriticalStriker {
-
-    @Shadow public abstract void addCritParticles(Entity target);
-
-    @Shadow public abstract void addEnchantedHitParticles(Entity target);
 
     @Inject(
             method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;",
@@ -100,7 +95,8 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
             )
     )
     private boolean applyCriticalStrikeDamage(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {
-        if (!CriticalStrikeMod.config.value.enable_melee_criticals) {
+        var config = CriticalStrikeMod.config.value;
+        if (!config.enable_melee_criticals) {
             return original.call(instance, source, amount);
         }
 
@@ -109,8 +105,7 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
         if (crit != null) {
             var result = original.call(instance, crit.source(), crit.amount());
             if (result) {
-                this.addEnchantedHitParticles(instance);
-                CritLogic.playFxAt(instance, 0.75F);
+                CritLogic.playFxAt(instance, config.sound_melee_crit_volume);
             }
             return result;
         } else {

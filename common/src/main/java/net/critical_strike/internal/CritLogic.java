@@ -1,9 +1,12 @@
 package net.critical_strike.internal;
 
+import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.api.CriticalDamageSource;
 import net.critical_strike.fx.CriticalStrikeSounds;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,12 +22,14 @@ public class CritLogic {
         return null;
     }
 
-    public static void playFxAt(Entity entity, float volume) {
-        var world = entity.getWorld();
+    public static void playFxAt(Entity target, float volume) {
+        var world = target.getWorld();
+        if (world instanceof ServerWorld serverWorld) {
+            serverWorld.getChunkManager().sendToNearbyPlayers(target, new EntityAnimationS2CPacket(target, CriticalStrikeMod.CRIT_PACKET_CODE));
+            var pitch = 0.9F + (world.getRandom().nextFloat() * 0.2F);
+            world.playSound(null, target.getX(), target.getY(), target.getZ(),
+                    CriticalStrikeSounds.CRITICAL_HIT.soundEvent(), SoundCategory.PLAYERS, volume, pitch);
+        }
         // world.playSoundFromEntity(entity, CriticalStrikeSounds.CRITICAL_HIT.soundEvent(), SoundCategory.PLAYERS, 1.0f, 1.0f);
-
-        var pitch = 0.9F + (world.getRandom().nextFloat() * 0.2F);
-        world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
-                CriticalStrikeSounds.CRITICAL_HIT.soundEvent(), SoundCategory.PLAYERS, volume, pitch);
     }
 }
