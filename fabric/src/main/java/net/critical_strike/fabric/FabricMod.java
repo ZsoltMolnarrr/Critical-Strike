@@ -1,5 +1,6 @@
 package net.critical_strike.fabric;
 
+import net.critical_strike.fx.CriticalStrikeParticles;
 import net.fabricmc.api.ModInitializer;
 
 import net.critical_strike.CriticalStrikeMod;
@@ -14,5 +15,6 @@ public final class FabricMod implements ModInitializer {
         // Run our common setup.
         CriticalStrikeMod.registerSounds();
         CriticalStrikeMod.init();
+        CriticalStrikeParticles.register();
     }
 }
