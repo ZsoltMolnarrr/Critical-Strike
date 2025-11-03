@@ -42,10 +42,27 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
 
         @Override
         public void generateSimpleParticles(Builder builder) {
+            // Generate simple particles
             for (var entry : CriticalStrikeParticles.ENTRIES) {
                 if (entry.texture().frames() > 1) {
                     for (int i = 0; i < entry.texture().frames(); i++) {
-                        // var index = entry.texture().reverseOrder() ? (entry.texture().frames() - 1 - i) : i;
+                        builder.add(
+                            entry.id(),
+                            new ParticleData(List.of(entry.texture().id().toString() + "_" + i))
+                        );
+                    }
+                } else {
+                    builder.add(
+                        entry.id(),
+                        new ParticleData(List.of(entry.texture().id().toString()))
+                    );
+                }
+            }
+
+            // Generate template particles
+            for (var entry : CriticalStrikeParticles.TEMPLATE_ENTRIES) {
+                if (entry.texture().frames() > 1) {
+                    for (int i = 0; i < entry.texture().frames(); i++) {
                         builder.add(
                             entry.id(),
                             new ParticleData(List.of(entry.texture().id().toString() + "_" + i))
