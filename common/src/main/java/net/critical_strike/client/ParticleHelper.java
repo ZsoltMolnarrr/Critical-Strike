@@ -34,6 +34,10 @@ public class ParticleHelper {
                         velocity.x, velocity.y, velocity.z);
             }
 
+            if (!target.isAlive()) {
+                return;
+            }
+
             var skull = resolveParticleType(CriticalStrikeParticles.SKULL.id(), color, target);
             for (int i = 0; i < config.particle_skull_count; i+=2 ) {
                 var offset = new Vec3d(width,0,0).rotateY(clientWorld.random.nextFloat() * 360F);

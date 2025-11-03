@@ -11,8 +11,8 @@
           "base": 0.1,
           "per_level_above_first": 0.1
         },
-        "attribute": "critical_strike:chance",
-        "id": "critical_strike:enchantment_chance",
+        "attribute": "critical_strike:damage",
+        "id": "critical_strike:enchantment_damage",
         "operation": "add_multiplied_base"
       }
     ]
@@ -30,6 +30,6 @@
   "slots": [
     "mainhand"
   ],
-  "supported_items": "#minecraft:enchantable/weapon",
+  "supported_items": "#critical_strike:enchantable/weapon",
   "weight": 5
 }

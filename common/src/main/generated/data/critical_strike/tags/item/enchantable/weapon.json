@@ -1,0 +1,16 @@
+{
+  "values": [
+    {
+      "id": "#minecraft:enchantable/weapon",
+      "required": false
+    },
+    {
+      "id": "#minecraft:enchantable/bow",
+      "required": false
+    },
+    {
+      "id": "#minecraft:enchantable/crossbow",
+      "required": false
+    }
+  ]
+}

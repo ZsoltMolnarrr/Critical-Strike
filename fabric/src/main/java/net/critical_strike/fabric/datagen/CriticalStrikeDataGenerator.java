@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.enchantment.Enchantment;
@@ -19,10 +18,10 @@ import net.minecraft.enchantment.effect.AttributeEnchantmentEffect;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.Item;
 import net.minecraft.registry.*;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
 import net.minecraft.util.Util;
 
 import java.util.ArrayList;
@@ -36,6 +35,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(LangGenerator::new);
         pack.addProvider(ParticlesGen::new);
         pack.addProvider(SoundGen::new);
+        pack.addProvider(ItemTagGen::new);
         pack.addProvider(EnchantmentTagGen::new);
         pack.addProvider(EnchantmentGenerator::new);
     }
@@ -146,13 +146,39 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
             var tagKey = TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId);
             getOrCreateTagBuilder(tagKey)
-                    .addOptionalTag(Enchantments.CRITICAL_CHANCE.id)
-                    .addOptionalTag(Enchantments.CRITICAL_DAMAGE.id);
+                    .addOptional(Enchantments.CRITICAL_CHANCE.id)
+                    .addOptional(Enchantments.CRITICAL_DAMAGE.id);
+
+            var nonTreasureTagKey = EnchantmentTags.NON_TREASURE;
+            getOrCreateTagBuilder(nonTreasureTagKey)
+                    .addOptional(Enchantments.CRITICAL_CHANCE.id)
+                    .addOptional(Enchantments.CRITICAL_DAMAGE.id);
         }
 
         @Override
         public String getName() {
             return "Critical Strike Enchantment Tags";
+        }
+    }
+
+    public static final Identifier CRITICAL_WEAPON_ENCHANTABLE = Identifier.of(CriticalStrikeMod.ID, "enchantable/weapon");
+    public static class ItemTagGen extends FabricTagProvider<Item> {
+        public ItemTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+            super(output, RegistryKeys.ITEM, registriesFuture);
+        }
+
+        @Override
+        protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+            var tagKey = TagKey.of(RegistryKeys.ITEM, CRITICAL_WEAPON_ENCHANTABLE);
+            getOrCreateTagBuilder(tagKey)
+                    .addOptionalTag(ItemTags.WEAPON_ENCHANTABLE.id())
+                    .addOptionalTag(ItemTags.BOW_ENCHANTABLE.id())
+                    .addOptionalTag(ItemTags.CROSSBOW_ENCHANTABLE.id());
+        }
+
+        @Override
+        public String getName() {
+            return "Critical Strike Item Tags";
         }
     }
 
@@ -170,7 +196,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
             var criticalStrikeId = RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id());
             Enchantment.Builder criticalStrike = Enchantment.builder(
                     Enchantment.definition(
-                            itemLookup.getOrThrow(ItemTags.WEAPON_ENCHANTABLE),
+                            itemLookup.getOrThrow(TagKey.of(RegistryKeys.ITEM, CRITICAL_WEAPON_ENCHANTABLE)),
                             5, // weight (rarity) - 5 is uncommon
                             5, // max level
                             Enchantment.leveledCost(3, 12), // min cost
@@ -193,25 +219,25 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
 
             var criticalDamageId = RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id());
             Enchantment.Builder criticalDamage = Enchantment.builder(
-                            Enchantment.definition(
-                                    itemLookup.getOrThrow(ItemTags.WEAPON_ENCHANTABLE),
-                                    5, // weight (rarity) - 5 is uncommon
-                                    5, // max level
-                                    Enchantment.leveledCost(3, 12), // min cost
-                                    Enchantment.leveledCost(12, 11), // max cost
-                                    1, // anvil cost
-                                    AttributeModifierSlot.MAINHAND)
-                    )
-                    .addEffect(
-                            EnchantmentEffectComponentTypes.ATTRIBUTES,
-                            new AttributeEnchantmentEffect(
-                                    Identifier.of(Enchantments.CRITICAL_CHANCE.id().getNamespace(),
-                                            "enchantment_" + Enchantments.CRITICAL_CHANCE.id.getPath()),
-                                    CriticalStrikeAttributes.CHANCE.entry,
-                                    EnchantmentLevelBasedValue.linear(0.1F), // 2% per level
-                                    EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
-                    )
-                    .exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)));
+                        Enchantment.definition(
+                                itemLookup.getOrThrow(TagKey.of(RegistryKeys.ITEM, CRITICAL_WEAPON_ENCHANTABLE)),
+                                5, // weight (rarity) - 5 is uncommon
+                                5, // max level
+                                Enchantment.leveledCost(3, 12), // min cost
+                                Enchantment.leveledCost(12, 11), // max cost
+                                1, // anvil cost
+                                AttributeModifierSlot.MAINHAND)
+                )
+                .addEffect(
+                        EnchantmentEffectComponentTypes.ATTRIBUTES,
+                        new AttributeEnchantmentEffect(
+                                Identifier.of(Enchantments.CRITICAL_DAMAGE.id().getNamespace(),
+                                        "enchantment_" + Enchantments.CRITICAL_DAMAGE.id.getPath()),
+                                CriticalStrikeAttributes.DAMAGE.entry,
+                                EnchantmentLevelBasedValue.linear(0.1F), // 2% per level
+                                EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+                )
+                .exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)));
             entries.add(criticalDamageId, criticalDamage.build(criticalDamageId.getValue()));
         }
 
