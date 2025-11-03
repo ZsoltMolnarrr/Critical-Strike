@@ -1,4 +1,6 @@
 {
   "attribute.name.critical_strike.chance": "Critical Hit Chance",
-  "attribute.name.critical_strike.damage": "Critical Hit Damage"
+  "attribute.name.critical_strike.damage": "Critical Hit Damage",
+  "enchantment.critical_strike.chance": "Critical Hit",
+  "enchantment.critical_strike.damage": "Critical Impact"
 }

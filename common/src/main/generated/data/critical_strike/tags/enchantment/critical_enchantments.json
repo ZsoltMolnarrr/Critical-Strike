@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#critical_strike:chance",
+      "required": false
+    },
+    {
+      "id": "#critical_strike:damage",
+      "required": false
+    }
+  ]
+}
