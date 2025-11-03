@@ -22,5 +22,9 @@ public final class FabricClientMod implements ClientModInitializer {
                 CriticalStrikeParticles.SKULL.particleType(),
                 (provider) -> new CriticalStrikeParticle.MagicVariant(provider, CriticalStrikeParticles.SKULL.behaviour())
         );
+        ParticleFactoryRegistry.getInstance().register(
+                CriticalStrikeParticles.CIRCLE.particleType(),
+                (provider) -> new CriticalStrikeParticle.MagicVariant(provider, CriticalStrikeParticles.CIRCLE.behaviour())
+        );
     }
 }

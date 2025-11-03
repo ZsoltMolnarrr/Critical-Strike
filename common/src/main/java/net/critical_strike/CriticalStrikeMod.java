@@ -7,7 +7,7 @@ import net.tiny_config.ConfigManager;
 public final class CriticalStrikeMod {
     public static final String ID = "critical_strike";
 
-    public static ConfigManager<Config> config = new ConfigManager<>(ID, new Config())
+    public static ConfigManager<Config> config = new ConfigManager<>("server_config", new Config())
             .builder()
             .setDirectory(ID)
             .sanitize(true)

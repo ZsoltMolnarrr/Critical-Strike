@@ -24,6 +24,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
     @Nullable Entity followEntity;
     private float growPerTickDelta = 0F;
     private float fadePerTickDelta = 0F;
+    private float overlayScale = 0.8F;
 
     CriticalStrikeParticle(ClientWorld world, SpriteProvider spriteProvider, CriticalStrikeParticles.Motion motion, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
         super(world, x, y, z, 0.5 - RANDOM.nextDouble(), velocityY, 0.5 - RANDOM.nextDouble());
@@ -124,6 +125,9 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
         var elapsed = currentAge - lastRendered;
         this.scale += growPerTickDelta * elapsed;
         this.alpha -= fadePerTickDelta * elapsed;
+        if (this.alpha < 0F) {
+            this.alpha = 0F;
+        }
 
         super.buildGeometry(vertexConsumer, camera, tickDelta);
 
@@ -135,7 +139,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
         this.red = 1F;
         this.green = 1F;
         this.blue = 1F;
-        this.scale = this.scale * 0.8F;
+        this.scale = this.scale * overlayScale;
 
         geometryForOverlay = true;
         super.buildGeometry(vertexConsumer, camera, tickDelta);
@@ -182,7 +186,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
         public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new CriticalStrikeParticle(clientWorld, this.spriteProvider, particleBehaviour.motion(), d, e, f, g, h, i);
             particle.glows = true;
-            particle.translucent = false;
+            particle.translucent = particleBehaviour.fadePerTickDelta() > 0F;
             particle.red = 1F;
             particle.green = 1F;
             particle.blue = 1F;
@@ -193,6 +197,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
             particle.maxAge = particleBehaviour.maxAge();
             particle.growPerTickDelta = particleBehaviour.growPerTickDelta();
             particle.fadePerTickDelta = particleBehaviour.fadePerTickDelta();
+            particle.overlayScale = particleBehaviour.overlayScale();
 
             TemplateParticleType.apply(particleType, particle);
             var appearance = particleType.getAppearance();

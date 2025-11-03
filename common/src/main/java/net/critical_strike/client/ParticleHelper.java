@@ -14,42 +14,45 @@ import org.jetbrains.annotations.Nullable;
 public class ParticleHelper {
     public static void spawnCritParticles(Entity target) {
         if (target.getWorld() instanceof ClientWorld clientWorld) {
+            var config = CriticalStrikeClient.config.value;
 
             var width = target.getWidth();
-            var originX = target.getX() + width * 0.5F;
+            var originX = target.getX();
             var originY = target.getY() + target.getHeight() * 0.5F;
-            var originZ = target.getZ() + width * 0.5F;
+            var originZ = target.getZ();
 
-            var spark = resolveParticleType(CriticalStrikeParticles.SPARKLE.id(), Color.from(0xff66ff), null);
-            for (int i = 0; i < 15; i++) {
+            var color = Color.from(config.particle_alt_color);
 
+            var spark = resolveParticleType(CriticalStrikeParticles.SPARKLE.id(), color, null);
+            for (int i = 0; i < config.particle_spark_count; i++) {
+                var speed = config.particle_spark_speed;
                 var velocity = new Vec3d(1F,0,0).rotateY(clientWorld.random.nextFloat() * 360F)
                         .rotateX(clientWorld.random.nextFloat() * 360F)
-                        .multiply(0.4F + clientWorld.random.nextFloat() * 0.2F);
-
+                        .multiply(speed + clientWorld.random.nextFloat() * (speed * 0.5F));
                 clientWorld.addParticle(spark, true,
                         originX, originY, originZ,
                         velocity.x, velocity.y, velocity.z);
             }
 
-            var skull = resolveParticleType(CriticalStrikeParticles.SKULL.id(), Color.from(0xff66ff), target);
-            for (int i = 0; i < 1; i++) {
+            var skull = resolveParticleType(CriticalStrikeParticles.SKULL.id(), color, target);
+            for (int i = 0; i < config.particle_skull_count; i+=2 ) {
                 var offset = new Vec3d(width,0,0).rotateY(clientWorld.random.nextFloat() * 360F);
                 var velocity = new Vec3d(0, 0.1F,0);
                 clientWorld.addParticle(skull, true,
                         originX + offset.x, originY + offset.y, originZ + offset.z,
                         velocity.x, velocity.y, velocity.z);
 
+                if (i + 1 >= config.particle_skull_count) break;
                 offset = offset.negate();
                 clientWorld.addParticle(skull, true,
                         originX + offset.x, originY + offset.y, originZ + offset.z,
                         velocity.x, velocity.y, velocity.z);
             }
 
-            var circle = resolveParticleType(CriticalStrikeParticles.CIRCLE.id(), Color.from(0xff66ff), target);
+            var circle = resolveParticleType(CriticalStrikeParticles.CIRCLE.id(), color, target);
             clientWorld.addParticle(circle, true,
                     originX, originY, originZ,
-                    1, 1, 0);
+                    0, 0, 0);
         }
     }
 
@@ -63,19 +66,6 @@ public class ParticleHelper {
             if (sourceEntity != null) {
                 appearance.entityFollowed = sourceEntity;
             }
-//            if (batch.color_rgba >= 0) {
-//                appearance.color = Color.fromRGBA(batch.color_rgba);
-//            }
-//            if (batch.follow_entity) {
-//                appearance.entityFollowed = sourceEntity;
-//            }
-//            if (batch.scale != 1) {
-//                appearance.scale = batch.scale;
-//            }
-//            if (batch.origin == ParticleBatch.Origin.GROUND) {
-//                appearance.grounded = true;
-//            }
-//            appearance.max_age = batch.max_age;
             particle = copy;
         }
         return particle;

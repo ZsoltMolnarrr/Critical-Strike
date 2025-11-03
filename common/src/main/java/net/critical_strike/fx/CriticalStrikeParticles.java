@@ -11,15 +11,22 @@ import java.util.ArrayList;
 
 public class CriticalStrikeParticles {
     public enum Motion { FLOAT, ASCEND, DECELERATE, BURST }
-    public record Behaviour(Motion motion, boolean animated, int maxAge, float scale, float growPerTickDelta, float fadePerTickDelta) {
+    public record Behaviour(Motion motion, boolean animated, int maxAge, float scale, float overlayScale,
+                            float growPerTickDelta, float fadePerTickDelta) {
         public Behaviour(Motion motion, boolean animated, int maxAge, float scale) {
-            this(motion, animated, maxAge, scale, 0F, 0F);
+            this(motion, animated, maxAge, scale, 0.8F, 0F, 0F);
         }
         public Behaviour grow(float growPerTickDelta) {
-            return new Behaviour(this.motion, this.animated, this.maxAge, this.scale, growPerTickDelta, this.fadePerTickDelta);
+            return new Behaviour(this.motion, this.animated, this.maxAge, this.scale, this.overlayScale,
+                    growPerTickDelta, this.fadePerTickDelta);
         }
         public Behaviour fade(float fadePerTickDelta) {
-            return new Behaviour(this.motion, this.animated, this.maxAge, this.scale, this.growPerTickDelta, fadePerTickDelta);
+            return new Behaviour(this.motion, this.animated, this.maxAge, this.scale, this.overlayScale,
+                    this.growPerTickDelta, fadePerTickDelta);
+        }
+        public Behaviour overlayScale(float overlayScale) {
+            return new Behaviour(this.motion, this.animated, this.maxAge, this.scale, overlayScale,
+                    this.growPerTickDelta, this.fadePerTickDelta);
         }
     }
 
@@ -80,13 +87,15 @@ public class CriticalStrikeParticles {
     public static final TemplateEntry SKULL = addTemplate(new TemplateEntry(
         "skull",
         Texture.of("skull"),
-        new Behaviour(Motion.ASCEND, false, 20, 0.75F)
+        new Behaviour(Motion.ASCEND, false, 20, 0.85F)
     ));
     public static final TemplateEntry CIRCLE = addTemplate(new TemplateEntry(
         "circle",
         Texture.of("circle"),
-        new Behaviour(Motion.FLOAT, true, 16, 4F)
-                //.grow(0.01F).fade(0.02F)
+        new Behaviour(Motion.FLOAT, true, 16, 2F)
+                .grow(0.08F)
+                .fade(0.05F)
+                .overlayScale(0.95F)
     ));
 
     public static void register() {
