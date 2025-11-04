@@ -83,8 +83,8 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
             )
     )
     private boolean disableVanillaCrit(PlayerEntity instance, Operation<Boolean> original) {
-        original.call(instance);
-        return true;
+        var result = original.call(instance);
+        return CriticalStrikeMod.config.value.disable_vanilla_jump_criticals ? true : result;
     }
 
     @WrapOperation(

@@ -82,7 +82,7 @@ public class CriticalStrikeParticles {
     public static final TemplateEntry SPARKLE = addTemplate(new TemplateEntry(
         "sparkle",
             Texture.of("sparkle"),
-            new Behaviour(Motion.DECELERATE, false, 8, 0.5F)
+            new Behaviour(Motion.DECELERATE, false, 10, 0.5F)
     ));
     public static final TemplateEntry SKULL = addTemplate(new TemplateEntry(
         "skull",

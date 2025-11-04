@@ -51,7 +51,9 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
                 translationBuilder.add(entry.translationKey, entry.translations.name());
             }
             for (var entry: Enchantments.entries) {
-                translationBuilder.add(Util.createTranslationKey("enchantment", entry.id()), entry.name());
+                var key = Util.createTranslationKey("enchantment", entry.id());
+                translationBuilder.add(key, entry.name());
+                translationBuilder.add(key + ".description", entry.description());
             }
         }
     }
@@ -117,7 +119,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
 
 
     public static class Enchantments {
-        public record Entry(Identifier id, String name) { }
+        public record Entry(Identifier id, String name, String description) { }
         public static ArrayList<Entry> entries = new ArrayList<>();
         public static Entry add(Entry entry) {
             entries.add(entry);
@@ -126,12 +128,12 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
 
         public static Entry CRITICAL_CHANCE = add(new Entry(
             Identifier.of(CriticalStrikeMod.ID, "chance"),
-            "Critical Hit"
+            "Critical Hit", "Increase chance to deal critical hits."
         ));
 
         public static Entry CRITICAL_DAMAGE = add(new Entry(
             Identifier.of(CriticalStrikeMod.ID, "damage"),
-            "Critical Impact"
+            "Critical Impact", "Increase damage dealt by critical hits."
         ));
 
         private static Identifier mutexTagId = Identifier.of(CriticalStrikeMod.ID, "critical_enchantments");

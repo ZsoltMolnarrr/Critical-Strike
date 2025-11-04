@@ -1,17 +1,17 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
-#issueTrackerURL = ""
-license = "Insert License Here"
+issueTrackerURL = "https://github.com/ZsoltMolnarrr/Critical-Strike/issues"
+license = "GPL-3.0"
 
 [[mods]]
 modId = "critical_strike"
 version = "${version}"
 displayName = "Critical Strike"
-authors = "Me!"
+authors = "Daedelus"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+Chance based critical hits for melee and ranged attacks!
 '''
-#logoFile = ""
+logoFile = "icon.png"
 
 [[dependencies.critical_strike]]
 modId = "neoforge"

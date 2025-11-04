@@ -3,16 +3,16 @@
   "id": "critical_strike",
   "version": "${version}",
   "name": "Critical Strike",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Chance based critical hits for melee and ranged attacks!",
   "authors": [
-    "Me!"
+    "Daedelus"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/ZsoltMolnarrr/Critical-Strike",
+    "sources": "https://github.com/ZsoltMolnarrr/Critical-Strike"
   },
-  "license": "CC0-1.0",
-  "icon": "assets/critical_strike/icon.png",
+  "license": "GPL-3.0",
+  "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [

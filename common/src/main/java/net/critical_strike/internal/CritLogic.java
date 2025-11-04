@@ -15,9 +15,9 @@ public class CritLogic {
     @Nullable public static Result modifyDamage(CriticalStriker critter, DamageSource source, float amount) {
         var isCritical = critter.rng_shouldDealCriticalHit();
         if (isCritical) {
-            var bonusMultiplier = critter.rng_criticalDamageMultiplier();
-            ((CriticalDamageSource)source).rng_setCritical(true);
-            return new Result(source, amount * (float) bonusMultiplier);
+            var bonusMultiplier = (float) critter.rng_criticalDamageMultiplier();
+            ((CriticalDamageSource)source).rng_setCriticalDamageMultiplier(bonusMultiplier);
+            return new Result(source, amount * bonusMultiplier);
         }
         return null;
     }
