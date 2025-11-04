@@ -28,6 +28,13 @@ configurations {
     }
 }
 
+def generatedResources = project(':common').file('src/main/generated')
+sourceSets {
+    main {
+        resources.srcDir generatedResources
+    }
+}
+
 repositories {
     maven {
         name = 'NeoForged'
