@@ -59,6 +59,12 @@ public class CriticalStrikeAttributes {
             return this;
         }
 
+        public void setInnateBonus(float bonus) {
+            if (this.innateModifier != null) {
+                this.innateModifier = new EntityAttributeModifier(innateModifier.id(), bonus, innateModifier.operation());
+            }
+        }
+
         public Entry translations(String name) {
             this.translations = new Translations(name);
             return this;
