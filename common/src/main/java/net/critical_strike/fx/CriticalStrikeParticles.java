@@ -87,7 +87,8 @@ public class CriticalStrikeParticles {
     public static final TemplateEntry SKULL = addTemplate(new TemplateEntry(
         "skull",
         Texture.of("skull"),
-        new Behaviour(Motion.ASCEND, false, 20, 0.85F)
+        new Behaviour(Motion.ASCEND, false, 18, 0.85F)
+                .fade(0.05F)
     ));
     public static final TemplateEntry CIRCLE = addTemplate(new TemplateEntry(
         "circle",
