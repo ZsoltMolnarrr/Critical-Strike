@@ -212,10 +212,11 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
                             Identifier.of(Enchantments.CRITICAL_CHANCE.id().getNamespace(),
                                     "enchantment_" + Enchantments.CRITICAL_CHANCE.id.getPath()),
                             CriticalStrikeAttributes.CHANCE.entry,
-                            EnchantmentLevelBasedValue.linear(0.05F), // 2% per level
+                            EnchantmentLevelBasedValue.linear(0.04F),
                             EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
             )
-            .exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)));
+            //.exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)))
+            ;
             entries.add(criticalStrikeId, criticalStrike.build(criticalStrikeId.getValue()));
 
 
@@ -236,10 +237,11 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
                                 Identifier.of(Enchantments.CRITICAL_DAMAGE.id().getNamespace(),
                                         "enchantment_" + Enchantments.CRITICAL_DAMAGE.id.getPath()),
                                 CriticalStrikeAttributes.DAMAGE.entry,
-                                EnchantmentLevelBasedValue.linear(0.1F), // 2% per level
+                                EnchantmentLevelBasedValue.linear(0.1F),
                                 EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
                 )
-                .exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)));
+                //.exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)))
+                ;
             entries.add(criticalDamageId, criticalDamage.build(criticalDamageId.getValue()));
         }
 

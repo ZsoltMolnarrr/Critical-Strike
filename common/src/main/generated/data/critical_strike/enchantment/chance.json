@@ -8,8 +8,8 @@
       {
         "amount": {
           "type": "minecraft:linear",
-          "base": 0.05,
-          "per_level_above_first": 0.05
+          "base": 0.04,
+          "per_level_above_first": 0.04
         },
         "attribute": "critical_strike:chance",
         "id": "critical_strike:enchantment_chance",
@@ -17,7 +17,6 @@
       }
     ]
   },
-  "exclusive_set": "#critical_strike:critical_enchantments",
   "max_cost": {
     "base": 12,
     "per_level_above_first": 11
