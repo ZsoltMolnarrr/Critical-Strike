@@ -1,4 +1,4 @@
-package net.critical_strike.mixin;
+package net.critical_strike.mixin.registry;
 
 import net.critical_strike.api.CriticalStrikeAttributes;
 import net.minecraft.entity.attribute.EntityAttributes;

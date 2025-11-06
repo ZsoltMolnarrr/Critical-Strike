@@ -49,6 +49,20 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
         public void generateTranslations(RegistryWrapper.WrapperLookup wrapperLookup, TranslationBuilder translationBuilder) {
             for (var entry: CriticalStrikeAttributes.all) {
                 translationBuilder.add(entry.translationKey, entry.translations.name());
+
+                var effectKey = Util.createTranslationKey("effect", entry.id);
+                translationBuilder.add(effectKey, entry.translations.effectName());
+                translationBuilder.add(effectKey + ".description", entry.translations.effectDescription());
+
+                var potionPath = entry.potionId().getPath();
+                var tippedArrowKey = "item.minecraft.tipped_arrow." + "effect." + potionPath;
+                translationBuilder.add(tippedArrowKey, "Arrow of " + entry.translations.effectName());
+                var potionKey = "item.minecraft.potion." + "effect." + potionPath;
+                translationBuilder.add(potionKey, "Potion of " + entry.translations.effectName());
+                var splashPotionKey = "item.minecraft.splash_potion." + "effect." + potionPath;
+                translationBuilder.add(splashPotionKey, "Splash Potion of " + entry.translations.effectName());
+                var lingeringPotionKey = "item.minecraft.lingering_potion." + "effect." + potionPath;
+                translationBuilder.add(lingeringPotionKey, "Lingering Potion of " + entry.translations.effectName());
             }
             for (var entry: Enchantments.entries) {
                 var key = Util.createTranslationKey("enchantment", entry.id());
@@ -211,7 +225,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
                     new AttributeEnchantmentEffect(
                             Identifier.of(Enchantments.CRITICAL_CHANCE.id().getNamespace(),
                                     "enchantment_" + Enchantments.CRITICAL_CHANCE.id.getPath()),
-                            CriticalStrikeAttributes.CHANCE.entry,
+                            CriticalStrikeAttributes.CHANCE.attributeEntry,
                             EnchantmentLevelBasedValue.linear(0.04F),
                             EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
             )
@@ -236,7 +250,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
                         new AttributeEnchantmentEffect(
                                 Identifier.of(Enchantments.CRITICAL_DAMAGE.id().getNamespace(),
                                         "enchantment_" + Enchantments.CRITICAL_DAMAGE.id.getPath()),
-                                CriticalStrikeAttributes.DAMAGE.entry,
+                                CriticalStrikeAttributes.DAMAGE.attributeEntry,
                                 EnchantmentLevelBasedValue.linear(0.1F),
                                 EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
                 )

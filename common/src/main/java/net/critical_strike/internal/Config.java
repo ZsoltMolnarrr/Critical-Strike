@@ -9,4 +9,6 @@ public class Config {
     public float sound_ranged_crit_volume = 0.8F;
     public float attribute_crit_chance_innate_bonus = 0.05F;
     public float attribute_crit_damage_innate_bonus = 0.5F;
+    public float effect_crit_chance_per_level = 0.05F;
+    public float effect_crit_damage_per_level = 0.1F;
 }

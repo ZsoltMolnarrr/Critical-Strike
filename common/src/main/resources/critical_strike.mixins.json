@@ -8,10 +8,12 @@
   ],
   "mixins": [
     "DamageSourceMixin",
-    "EntityAttributesMixin",
     "LivingEntityMixin",
     "PersistentProjectileEntityMixin",
-    "PlayerEntityMixin"
+    "PlayerEntityMixin",
+    "registry.EntityAttributesMixin",
+    "registry.PotionsMixin",
+    "registry.StatusEffectsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

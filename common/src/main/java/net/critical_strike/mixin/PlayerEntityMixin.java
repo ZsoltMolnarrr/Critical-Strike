@@ -28,7 +28,7 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
     )
     private static void addAttributes(final CallbackInfoReturnable<DefaultAttributeContainer.Builder> info) {
         for (var entry : CriticalStrikeAttributes.all) {
-            info.getReturnValue().add(entry.entry);
+            info.getReturnValue().add(entry.attributeEntry);
         }
     }
 
@@ -38,7 +38,7 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
             if (entry.innateModifier != null) {
                 ((PlayerEntity)(Object)this)
                         .getAttributes()
-                        .getCustomInstance(entry.entry)
+                        .getCustomInstance(entry.attributeEntry)
                         .addPersistentModifier(entry.innateModifier);
             }
         }
@@ -64,13 +64,13 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
 
     public double rng_criticalChance() {
         var player = (PlayerEntity)(Object)this;
-        var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.entry);
+        var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);
         return CriticalStrikeAttributes.CHANCE.asChance(value);
     }
 
     public double rng_criticalDamageMultiplier() {
         var player = (PlayerEntity)(Object)this;
-        var value = player.getAttributeValue(CriticalStrikeAttributes.DAMAGE.entry);
+        var value = player.getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry);
         return CriticalStrikeAttributes.DAMAGE.asMultiplier(value);
     }
 

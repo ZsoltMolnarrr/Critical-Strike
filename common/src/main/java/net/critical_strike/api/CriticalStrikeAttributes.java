@@ -1,9 +1,12 @@
 package net.critical_strike.api;
 
 import net.critical_strike.CriticalStrikeMod;
+import net.critical_strike.internal.CustomStatusEffect;
 import net.minecraft.entity.attribute.ClampedEntityAttribute;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -24,15 +27,15 @@ public class CriticalStrikeAttributes {
         return entry;
     }
 
-    public record Translations(String name) { }
+    public record Translations(String name, String effectName, String effectDescription) { }
     public static class Entry {
         public final Identifier id;
         public final String translationKey;
         public final EntityAttribute attribute;
         public final double baseValue;
-        @Nullable public RegistryEntry<EntityAttribute> entry;
+        @Nullable public RegistryEntry<EntityAttribute> attributeEntry;
         @Nullable public EntityAttributeModifier innateModifier;
-        @Nullable  public Translations translations;
+        @Nullable public Translations translations;
 
         public Entry(String name, double minValue, double baseValue, boolean tracked) {
             this.id = Identifier.of(NAMESPACE, name);
@@ -51,7 +54,8 @@ public class CriticalStrikeAttributes {
         }
 
         public void register() {
-            entry = Registry.registerReference(Registries.ATTRIBUTE, id, attribute);
+            if (attributeEntry != null) { return; }
+            attributeEntry = Registry.registerReference(Registries.ATTRIBUTE, id, attribute);
         }
 
         public Entry innateModifier(EntityAttributeModifier.Operation operation, float value) {
@@ -65,16 +69,42 @@ public class CriticalStrikeAttributes {
             }
         }
 
-        public Entry translations(String name) {
-            this.translations = new Translations(name);
+        public Entry translations(String name, String effectName, String effectDescription) {
+            this.translations = new Translations(name, effectName, effectDescription);
             return this;
+        }
+
+        @Nullable private StatusEffect statusEffect = null;
+        @Nullable public RegistryEntry<StatusEffect> effectEntry = null;
+        public Entry effect(int color) {
+            this.statusEffect = new CustomStatusEffect(StatusEffectCategory.BENEFICIAL, color);
+            return this;
+        }
+        public void setEffectBonus(float bonus) {
+            if (this.statusEffect != null && this.attributeEntry != null) {
+                this.statusEffect.addAttributeModifier(this.attributeEntry,
+                        AttributeIdentifiers.EFFECT_BONUS,
+                        bonus,
+                        EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                );
+            }
+        }
+        public void registerEffect() {
+            if (this.statusEffect != null) {
+                this.effectEntry = Registry.registerReference(Registries.STATUS_EFFECT, id, this.statusEffect);
+            }
+        }
+        public Identifier potionId() {
+            return Identifier.of(id.getNamespace(), id.getNamespace() + "_" + id.getPath());
         }
     }
 
     public static final Entry CHANCE = entry("chance", 100, 100, false)
-            .translations("Critical Hit Chance")
-            .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.05F);
+            .translations("Critical Hit Chance", "Critical Hit", "Increases the chance to deal critical hits.")
+            .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.05F)
+            .effect(0xF400FF);
     public static final Entry DAMAGE = entry("damage", 100, 100, false)
-            .translations("Critical Hit Damage")
-            .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.5F);
+            .translations("Critical Hit Damage", "Critical Impact", "Increases the damage dealt by critical hits.")
+            .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.5F)
+            .effect(0x800000);
 }
