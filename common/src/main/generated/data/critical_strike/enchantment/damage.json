@@ -17,6 +17,7 @@
       }
     ]
   },
+  "exclusive_set": "#critical_strike:critical_enchantments",
   "max_cost": {
     "base": 12,
     "per_level_above_first": 11

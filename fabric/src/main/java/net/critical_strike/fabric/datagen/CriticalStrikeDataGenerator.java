@@ -229,7 +229,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
                             EnchantmentLevelBasedValue.linear(0.04F),
                             EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
             )
-            //.exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)))
+            .exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)))
             ;
             entries.add(criticalStrikeId, criticalStrike.build(criticalStrikeId.getValue()));
 
@@ -254,7 +254,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
                                 EnchantmentLevelBasedValue.linear(0.1F),
                                 EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
                 )
-                //.exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)))
+                .exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)))
                 ;
             entries.add(criticalDamageId, criticalDamage.build(criticalDamageId.getValue()));
         }
