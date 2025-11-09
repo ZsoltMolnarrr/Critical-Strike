@@ -11,4 +11,6 @@ public class Config {
     public float attribute_crit_damage_innate_bonus = 0.5F;
     public float effect_crit_chance_per_level = 0.05F;
     public float effect_crit_damage_per_level = 0.1F;
+    public float balance_melee_damage_multiplier = 1.0F;
+    public float balance_ranged_damage_multiplier = 1.0F;
 }

@@ -103,7 +103,7 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
         var critter = (CriticalStriker)(Object)this;
         var crit = CritLogic.modifyDamage(critter, source, amount);
         if (crit != null) {
-            var result = original.call(instance, crit.source(), crit.amount());
+            var result = original.call(instance, crit.source(), crit.amount() * config.balance_melee_damage_multiplier);
             if (result) {
                 CritLogic.playFxAt(instance, config.sound_melee_crit_volume);
             }

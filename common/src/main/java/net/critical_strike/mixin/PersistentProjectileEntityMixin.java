@@ -30,7 +30,7 @@ public class PersistentProjectileEntityMixin {
         if (projectile.getOwner() instanceof CriticalStriker critter) {
             var crit = CritLogic.modifyDamage(critter, source, amount);
             if (crit != null) {
-                var result = original.call(instance, crit.source(), crit.amount());
+                var result = original.call(instance, crit.source(), crit.amount() * config.balance_ranged_damage_multiplier);
                 if (result) {
                     CritLogic.playFxAt(instance, config.sound_ranged_crit_volume);
                 }
