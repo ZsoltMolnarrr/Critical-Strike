@@ -1,0 +1,20 @@
+{
+  "attribute.name.critical_strike.chance": "暴击率",
+  "attribute.name.critical_strike.damage": "暴击伤害",
+  "effect.critical_strike.chance": "爆击",
+  "effect.critical_strike.chance.description": "增加攻击的暴击概率。",
+  "effect.critical_strike.damage": "爆伤",
+  "effect.critical_strike.damage.description": "增加攻击的暴击伤害。",
+  "enchantment.critical_strike.chance": "暴击概率",
+  "enchantment.critical_strike.chance.description": "增加攻击的暴击概率。",
+  "enchantment.critical_strike.damage": "暴击伤害",
+  "enchantment.critical_strike.damage.description": "增加攻击的暴击伤害。",
+  "item.minecraft.lingering_potion.effect.critical_strike_chance": "滞留型爆击药水",
+  "item.minecraft.lingering_potion.effect.critical_strike_damage": "滞留型爆伤药水",
+  "item.minecraft.potion.effect.critical_strike_chance": "爆击药水",
+  "item.minecraft.potion.effect.critical_strike_damage": "爆伤药水",
+  "item.minecraft.splash_potion.effect.critical_strike_chance": "溅射型爆击药水",
+  "item.minecraft.splash_potion.effect.critical_strike_damage": "溅射型爆伤药水",
+  "item.minecraft.tipped_arrow.effect.critical_strike_chance": "爆击之箭",
+  "item.minecraft.tipped_arrow.effect.critical_strike_damage": "爆伤之箭"
+}
