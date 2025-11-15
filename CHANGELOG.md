@@ -1,3 +1,7 @@
+# 1.0.4
+
+Require weapons to hold for melee critical strikes to occur
+
 # 1.0.3
 
 Add balancing constants to the server side config

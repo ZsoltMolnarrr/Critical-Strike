@@ -1,6 +1,7 @@
 package net.critical_strike.internal;
 
 public class Config {
+    public boolean require_weapon_for_critical_strikes = true;
     public boolean disable_vanilla_jump_criticals = true;
     public boolean enable_melee_criticals = true;
     public boolean enable_ranged_criticals = true;

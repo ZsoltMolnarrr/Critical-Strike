@@ -84,7 +84,7 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
     )
     private boolean disableVanillaCrit(PlayerEntity instance, Operation<Boolean> original) {
         var result = original.call(instance);
-        return CriticalStrikeMod.config.value.disable_vanilla_jump_criticals ? true : result;
+        return CriticalStrikeMod.config.value.disable_vanilla_jump_criticals || result;
     }
 
     @WrapOperation(
@@ -97,6 +97,10 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
     private boolean applyCriticalStrikeDamage(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {
         var config = CriticalStrikeMod.config.value;
         if (!config.enable_melee_criticals) {
+            return original.call(instance, source, amount);
+        }
+        var attacker = (PlayerEntity)(Object)this;
+        if (config.require_weapon_for_critical_strikes && !CritLogic.isWeapon(attacker.getMainHandStack())) {
             return original.call(instance, source, amount);
         }
 
