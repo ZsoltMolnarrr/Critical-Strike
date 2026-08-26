@@ -17,7 +17,7 @@ public class PersistentProjectileEntityMixin {
             method = "onEntityHit",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
+                    target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
             )
     )
     private boolean wrapDamageEntity(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {

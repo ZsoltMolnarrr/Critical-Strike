@@ -1,11 +1,8 @@
 package net.critical_strike.client.particle;
 
 import net.critical_strike.fx.CriticalStrikeParticles;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
@@ -14,7 +11,7 @@ import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
-public class CriticalStrikeParticle extends SpriteBillboardParticle  {
+public class CriticalStrikeParticle extends BillboardParticle  {
     private static final Random RANDOM = Random.create();
     private final SpriteProvider spriteProvider;
     private final CriticalStrikeParticles.Motion motion;
@@ -27,7 +24,8 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
     private float overlayScale = 0.8F;
 
     CriticalStrikeParticle(ClientWorld world, SpriteProvider spriteProvider, CriticalStrikeParticles.Motion motion, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
-        super(world, x, y, z, 0.5 - RANDOM.nextDouble(), velocityY, 0.5 - RANDOM.nextDouble());
+        super(world, x, y, z, 0.5 - RANDOM.nextDouble(), velocityY, 0.5 - RANDOM.nextDouble(),
+                spriteProvider.getSprite(world.getRandom()));
         this.spriteProvider = spriteProvider;
         this.motion = motion;
 
@@ -69,24 +67,17 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
             }
         }
 
-        this.setSpriteForAge(spriteProvider);
+        this.updateSprite(spriteProvider);
         this.collidesWithWorld = false;
     }
 
+    /// Render type = atlas + pipeline since 1.21.9. `LIT` had no dedicated sheet any more; it maps to translucent.
     @Override
-    public ParticleTextureSheet getType() {
-        if (glows) {
-            if (translucent) {
-                return ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT;
-            } else {
-                return ParticleTextureSheet.PARTICLE_SHEET_LIT;
-            }
+    protected RenderType getRenderType() {
+        if (glows || translucent) {
+            return RenderType.PARTICLE_ATLAS_TRANSLUCENT;
         } else {
-            if (translucent) {
-                return ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT;
-            } else {
-                return ParticleTextureSheet.PARTICLE_SHEET_OPAQUE;
-            }
+            return RenderType.PARTICLE_ATLAS_OPAQUE;
         }
     }
 
@@ -101,9 +92,9 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
 
     public void move(double dx, double dy, double dz) {
         if (followEntity != null && !followEntity.isRemoved()) {
-            dx += followEntity.getX() - followEntity.prevX;
-            dy += followEntity.getY() - followEntity.prevY;
-            dz += followEntity.getZ() - followEntity.prevZ;
+            dx += followEntity.getX() - followEntity.lastX;
+            dy += followEntity.getY() - followEntity.lastY;
+            dz += followEntity.getZ() - followEntity.lastZ;
         }
         super.move(dx, dy, dz);
     }
@@ -112,7 +103,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
     public void tick() {
         super.tick();
         if (animated) {
-            this.setSpriteForAge(this.spriteProvider);
+            this.updateSprite(this.spriteProvider);
         }
     }
 
@@ -120,8 +111,8 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
     private float lastRendered = 0F;
 
     @Override
-    public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
-        var currentAge = this.age + tickDelta;
+    public void render(BillboardParticleSubmittable submittable, Camera camera, float tickProgress) {
+        var currentAge = this.age + tickProgress;
         var elapsed = currentAge - lastRendered;
         this.scale += growPerTickDelta * elapsed;
         this.alpha -= fadePerTickDelta * elapsed;
@@ -129,7 +120,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
             this.alpha = 0F;
         }
 
-        super.buildGeometry(vertexConsumer, camera, tickDelta);
+        super.render(submittable, camera, tickProgress);
 
         var red = this.red;
         var green = this.green;
@@ -142,7 +133,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
         this.scale = this.scale * overlayScale;
 
         geometryForOverlay = true;
-        super.buildGeometry(vertexConsumer, camera, tickDelta);
+        super.render(submittable, camera, tickProgress);
         geometryForOverlay = false;
         this.red = red;
         this.green = green;
@@ -155,8 +146,8 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
 
     private boolean geometryForOverlay = false;
     @Override
-    protected void method_60373(VertexConsumer vertexConsumer, Camera camera, Quaternionf quaternionf, float f) {
-        Vec3d vec3d = camera.getPos();
+    protected void render(BillboardParticleSubmittable submittable, Camera camera, Quaternionf rotation, float tickProgress) {
+        Vec3d vec3d = camera.getCameraPos();
 
         // Bringing z position slightly closer for overlay pass to prevent z-fighting
         Vec3d overlayOffset = new Vec3d(0.0, 0.0, 0.0);
@@ -165,15 +156,14 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
             overlayOffset = cameraLook.normalize().multiply(0.01);
         }
 
-        float g = (float)(MathHelper.lerp((double)f, this.prevPosX, this.x) - vec3d.getX() - overlayOffset.getX());
-        float h = (float)(MathHelper.lerp((double)f, this.prevPosY, this.y) - vec3d.getY());
-        float i = (float)(MathHelper.lerp((double)f, this.prevPosZ, this.z) - vec3d.getZ() - overlayOffset.getZ());
-        this.method_60374(vertexConsumer, quaternionf, g, h, i, f);
+        float g = (float)(MathHelper.lerp((double)tickProgress, this.lastX, this.x) - vec3d.getX() - overlayOffset.getX());
+        float h = (float)(MathHelper.lerp((double)tickProgress, this.lastY, this.y) - vec3d.getY());
+        float i = (float)(MathHelper.lerp((double)tickProgress, this.lastZ, this.z) - vec3d.getZ() - overlayOffset.getZ());
+        this.renderVertex(submittable, rotation, g, h, i, tickProgress);
     }
 
     // MARK: Factories
 
-    @Environment(EnvType.CLIENT)
     public static class MagicVariant implements ParticleFactory<TemplateParticleType> {
         private final SpriteProvider spriteProvider;
         private final CriticalStrikeParticles.Behaviour particleBehaviour;
@@ -183,7 +173,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
             this.particleBehaviour = particleBehaviour;
         }
 
-        public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+        public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i, Random random) {
             var particle = new CriticalStrikeParticle(clientWorld, this.spriteProvider, particleBehaviour.motion(), d, e, f, g, h, i);
             particle.glows = true;
             particle.translucent = particleBehaviour.fadePerTickDelta() > 0F;

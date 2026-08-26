@@ -1,3 +1,7 @@
+# 1.0.5
+
+Minecraft 1.21.11 support
+
 # 1.0.4
 
 Require weapons to hold for melee critical strikes to occur

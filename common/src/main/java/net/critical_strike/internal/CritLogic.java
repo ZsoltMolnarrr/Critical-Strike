@@ -45,7 +45,7 @@ public class CritLogic {
     }
 
     public static void playFxAt(Entity target, float volume) {
-        var world = target.getWorld();
+        var world = target.getEntityWorld();
         if (world instanceof ServerWorld serverWorld) {
             serverWorld.getChunkManager().sendToNearbyPlayers(target, new EntityAnimationS2CPacket(target, CriticalStrikeMod.CRIT_PACKET_CODE));
             var pitch = 0.9F + (world.getRandom().nextFloat() * 0.2F);

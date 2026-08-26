@@ -11,7 +11,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,7 +32,7 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void onConstructed(World world, BlockPos pos, float yaw, GameProfile gameProfile, CallbackInfo ci) {
+    private void onConstructed(World world, GameProfile gameProfile, CallbackInfo ci) {
         for (var entry : CriticalStrikeAttributes.all) {
             if (entry.innateModifier != null) {
                 ((PlayerEntity)(Object)this)
@@ -75,23 +74,28 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
     }
 
 
+    /// Since 1.21.2 `attack` no longer inlines the fall-distance/`isOnGround` chain — it asks
+    /// `isCriticalHit(target)`. Forcing that to `false` disables the vanilla jump crit without
+    /// touching the sweep-attack check, which does its own `isOnGround()` call.
     @WrapOperation(
             method = "attack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;isOnGround()Z"
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;isCriticalHit(Lnet/minecraft/entity/Entity;)Z"
             )
     )
-    private boolean disableVanillaCrit(PlayerEntity instance, Operation<Boolean> original) {
-        var result = original.call(instance);
-        return CriticalStrikeMod.config.value.disable_vanilla_jump_criticals || result;
+    private boolean disableVanillaCrit(PlayerEntity instance, Entity target, Operation<Boolean> original) {
+        if (CriticalStrikeMod.config.value.disable_vanilla_jump_criticals) {
+            return false;
+        }
+        return original.call(instance, target);
     }
 
     @WrapOperation(
             method = "attack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
+                    target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
             )
     )
     private boolean applyCriticalStrikeDamage(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {

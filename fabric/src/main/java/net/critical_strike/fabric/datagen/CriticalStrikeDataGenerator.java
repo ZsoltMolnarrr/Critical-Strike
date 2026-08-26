@@ -161,14 +161,14 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
             var tagKey = TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId);
-            getOrCreateTagBuilder(tagKey)
-                    .addOptional(Enchantments.CRITICAL_CHANCE.id)
-                    .addOptional(Enchantments.CRITICAL_DAMAGE.id);
+            builder(tagKey)
+                    .addOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id))
+                    .addOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id));
 
             var nonTreasureTagKey = EnchantmentTags.NON_TREASURE;
-            getOrCreateTagBuilder(nonTreasureTagKey)
-                    .addOptional(Enchantments.CRITICAL_CHANCE.id)
-                    .addOptional(Enchantments.CRITICAL_DAMAGE.id);
+            builder(nonTreasureTagKey)
+                    .addOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id))
+                    .addOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id));
         }
 
         @Override
@@ -186,10 +186,10 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
             var tagKey = TagKey.of(RegistryKeys.ITEM, CRITICAL_WEAPON_ENCHANTABLE);
-            getOrCreateTagBuilder(tagKey)
-                    .addOptionalTag(ItemTags.WEAPON_ENCHANTABLE.id())
-                    .addOptionalTag(ItemTags.BOW_ENCHANTABLE.id())
-                    .addOptionalTag(ItemTags.CROSSBOW_ENCHANTABLE.id());
+            builder(tagKey)
+                    .addOptionalTag(ItemTags.WEAPON_ENCHANTABLE)
+                    .addOptionalTag(ItemTags.BOW_ENCHANTABLE)
+                    .addOptionalTag(ItemTags.CROSSBOW_ENCHANTABLE);
         }
 
         @Override
@@ -205,8 +205,8 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup registries, Entries entries) {
-            RegistryEntryLookup<Item> itemLookup = registries.createRegistryLookup().getOrThrow(RegistryKeys.ITEM);
-            RegistryEntryLookup<Enchantment> enchantmentLookup = registries.createRegistryLookup().getOrThrow(RegistryKeys.ENCHANTMENT);
+            RegistryEntryLookup<Item> itemLookup = registries.getOrThrow(RegistryKeys.ITEM);
+            RegistryEntryLookup<Enchantment> enchantmentLookup = registries.getOrThrow(RegistryKeys.ENCHANTMENT);
 
             // Critical Strike enchantment - increases critical hit chance
             var criticalStrikeId = RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id());

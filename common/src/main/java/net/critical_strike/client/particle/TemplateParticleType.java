@@ -1,7 +1,7 @@
 package net.critical_strike.client.particle;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.BillboardParticle;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.particle.ParticleEffect;
@@ -53,7 +53,7 @@ public class TemplateParticleType extends ParticleType<TemplateParticleType> imp
         return copy;
     }
 
-    public static void apply(TemplateParticleType templateParticleType, Particle particle) {
+    public static void apply(TemplateParticleType templateParticleType, BillboardParticle particle) {
         var appearance = templateParticleType.getAppearance();
         if (appearance != null) {
             var color = appearance.color;

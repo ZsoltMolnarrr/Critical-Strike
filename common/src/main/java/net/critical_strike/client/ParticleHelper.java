@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class ParticleHelper {
     public static void spawnCritParticles(Entity target) {
-        if (target.getWorld() instanceof ClientWorld clientWorld) {
+        if (target.getEntityWorld() instanceof ClientWorld clientWorld) {
             var config = CriticalStrikeClient.config.value;
 
             var width = target.getWidth();
@@ -29,7 +29,7 @@ public class ParticleHelper {
                 var velocity = new Vec3d(1F,0,0).rotateY(clientWorld.random.nextFloat() * 360F)
                         .rotateX(clientWorld.random.nextFloat() * 360F)
                         .multiply(speed + clientWorld.random.nextFloat() * (speed * 0.5F));
-                clientWorld.addParticle(spark, true,
+                clientWorld.addParticleClient(spark, true, false,
                         originX, originY, originZ,
                         velocity.x, velocity.y, velocity.z);
             }
@@ -42,19 +42,19 @@ public class ParticleHelper {
             for (int i = 0; i < config.particle_skull_count; i+=2 ) {
                 var offset = new Vec3d(width,0,0).rotateY(clientWorld.random.nextFloat() * 360F);
                 var velocity = new Vec3d(0, 0.1F,0);
-                clientWorld.addParticle(skull, true,
+                clientWorld.addParticleClient(skull, true, false,
                         originX + offset.x, originY + offset.y, originZ + offset.z,
                         velocity.x, velocity.y, velocity.z);
 
                 if (i + 1 >= config.particle_skull_count) break;
                 offset = offset.negate();
-                clientWorld.addParticle(skull, true,
+                clientWorld.addParticleClient(skull, true, false,
                         originX + offset.x, originY + offset.y, originZ + offset.z,
                         velocity.x, velocity.y, velocity.z);
             }
 
             var circle = resolveParticleType(CriticalStrikeParticles.CIRCLE.id(), color, target);
-            clientWorld.addParticle(circle, true,
+            clientWorld.addParticleClient(circle, true, false,
                     originX, originY, originZ,
                     0, 0, 0);
         }

@@ -47,7 +47,7 @@ repositories {
         }
     }
     maven {
-        url "https://maven.su5ed.dev/releases"
+        url = 'https://maven.su5ed.dev/releases'
     }
 }
 

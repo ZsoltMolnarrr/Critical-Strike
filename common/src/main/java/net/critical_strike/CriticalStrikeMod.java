@@ -41,9 +41,10 @@ public final class CriticalStrikeMod {
     public static void registerPotions() {
         for (var entry: CriticalStrikeAttributes.all) {
             if (entry.effectEntry == null) continue;
-            var potion = new Potion(new StatusEffectInstance(entry.effectEntry, 3600,
+            var potionId = entry.potionId();
+            var potion = new Potion(potionId.getPath(), new StatusEffectInstance(entry.effectEntry, 3600,
                     0, false, true));
-            Registry.register(Registries.POTION, entry.potionId(), potion);
+            Registry.register(Registries.POTION, potionId, potion);
         }
     }
 }
