@@ -2,7 +2,7 @@ package net.critical_strike.neoforge;
 
 import net.critical_strike.fx.CriticalStrikeParticles;
 import net.critical_strike.fx.CriticalStrikeSounds;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 
@@ -18,10 +18,10 @@ public final class NeoForgeMod {
     }
 
     public static void register(RegisterEvent event) {
-        event.register(RegistryKeys.PARTICLE_TYPE, reg -> {
+        event.register(Registries.PARTICLE_TYPE, reg -> {
             CriticalStrikeParticles.register();
         });
-        event.register(RegistryKeys.SOUND_EVENT, reg -> {
+        event.register(Registries.SOUND_EVENT, reg -> {
             CriticalStrikeSounds.register();
         });
     }

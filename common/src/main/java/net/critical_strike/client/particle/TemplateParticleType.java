@@ -1,15 +1,15 @@
 package net.critical_strike.client.particle;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.client.particle.BillboardParticle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleType;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
-public class TemplateParticleType extends ParticleType<TemplateParticleType> implements ParticleEffect, TemplateParticleEffect {
+public class TemplateParticleType extends ParticleType<TemplateParticleType> implements ParticleOptions, TemplateParticleEffect {
     private final MapCodec<TemplateParticleType> codec = MapCodec.unit(this::getType);
-    private final PacketCodec<RegistryByteBuf, TemplateParticleType> packetCodec = PacketCodec.unit(this);
+    private final StreamCodec<RegistryFriendlyByteBuf, TemplateParticleType> packetCodec = StreamCodec.unit(this);
 
     private TemplateParticleType type;
     public TemplateParticleType() {
@@ -26,12 +26,12 @@ public class TemplateParticleType extends ParticleType<TemplateParticleType> imp
     }
 
     @Override
-    public MapCodec<TemplateParticleType> getCodec() {
+    public MapCodec<TemplateParticleType> codec() {
         return this.codec;
     }
 
     @Override
-    public PacketCodec<? super RegistryByteBuf, TemplateParticleType> getPacketCodec() {
+    public StreamCodec<? super RegistryFriendlyByteBuf, TemplateParticleType> streamCodec() {
         return packetCodec;
     }
 
@@ -48,12 +48,12 @@ public class TemplateParticleType extends ParticleType<TemplateParticleType> imp
     }
     @Override
     public TemplateParticleEffect copy() {
-        var copy = new TemplateParticleType(this.shouldAlwaysSpawn());
+        var copy = new TemplateParticleType(this.getOverrideLimiter());
         copy.type = this.type;
         return copy;
     }
 
-    public static void apply(TemplateParticleType templateParticleType, BillboardParticle particle) {
+    public static void apply(TemplateParticleType templateParticleType, SingleQuadParticle particle) {
         var appearance = templateParticleType.getAppearance();
         if (appearance != null) {
             var color = appearance.color;

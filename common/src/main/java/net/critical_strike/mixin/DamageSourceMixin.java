@@ -1,7 +1,7 @@
 package net.critical_strike.mixin;
 
 import net.critical_strike.api.CriticalDamageSource;
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

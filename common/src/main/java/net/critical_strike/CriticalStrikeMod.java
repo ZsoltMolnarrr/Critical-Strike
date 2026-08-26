@@ -3,10 +3,10 @@ package net.critical_strike;
 import net.critical_strike.api.CriticalStrikeAttributes;
 import net.critical_strike.fx.CriticalStrikeSounds;
 import net.critical_strike.internal.Config;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.potion.Potion;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.alchemy.Potion;
 import net.tiny_config.ConfigManager;
 
 public final class CriticalStrikeMod {
@@ -42,9 +42,9 @@ public final class CriticalStrikeMod {
         for (var entry: CriticalStrikeAttributes.all) {
             if (entry.effectEntry == null) continue;
             var potionId = entry.potionId();
-            var potion = new Potion(potionId.getPath(), new StatusEffectInstance(entry.effectEntry, 3600,
+            var potion = new Potion(potionId.getPath(), new MobEffectInstance(entry.effectEntry, 3600,
                     0, false, true));
-            Registry.register(Registries.POTION, potionId, potion);
+            Registry.register(BuiltInRegistries.POTION, potionId, potion);
         }
     }
 }

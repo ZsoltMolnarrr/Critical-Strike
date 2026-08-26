@@ -1,7 +1,7 @@
 package net.critical_strike.mixin.registry;
 
 import net.critical_strike.CriticalStrikeMod;
-import net.minecraft.potion.Potions;
+import net.minecraft.world.item.alchemy.Potions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

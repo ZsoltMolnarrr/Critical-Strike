@@ -5,19 +5,19 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.internal.CritLogic;
 import net.critical_strike.internal.CriticalStriker;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(PersistentProjectileEntity.class)
+@Mixin(AbstractArrow.class)
 public class PersistentProjectileEntityMixin {
     @WrapOperation(
-            method = "onEntityHit",
+            method = "onHitEntity",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
+                    target = "Lnet/minecraft/world/entity/Entity;hurtOrSimulate(Lnet/minecraft/world/damagesource/DamageSource;F)Z"
             )
     )
     private boolean wrapDamageEntity(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {
@@ -26,7 +26,7 @@ public class PersistentProjectileEntityMixin {
             return original.call(instance, source, amount);
         }
 
-        var projectile = (PersistentProjectileEntity)(Object)this;
+        var projectile = (AbstractArrow)(Object)this;
         if (projectile.getOwner() instanceof CriticalStriker critter) {
             var crit = CritLogic.modifyDamage(critter, source, amount);
             if (crit != null) {

@@ -10,23 +10,22 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.component.EnchantmentEffectComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentLevelBasedValue;
-import net.minecraft.enchantment.effect.AttributeEnchantmentEffect;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
-
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.LevelBasedValue;
+import net.minecraft.world.item.enchantment.effects.EnchantmentAttributeEffect;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -44,16 +43,16 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class LangGenerator extends FabricLanguageProvider {
-        protected LangGenerator(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+        protected LangGenerator(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, "en_us", registryLookup);
         }
 
         @Override
-        public void generateTranslations(RegistryWrapper.WrapperLookup wrapperLookup, TranslationBuilder translationBuilder) {
+        public void generateTranslations(HolderLookup.Provider wrapperLookup, TranslationBuilder translationBuilder) {
             for (var entry: CriticalStrikeAttributes.all) {
                 translationBuilder.add(entry.translationKey, entry.translations.name());
 
-                var effectKey = Util.createTranslationKey("effect", entry.id);
+                var effectKey = Util.makeDescriptionId("effect", entry.id);
                 translationBuilder.add(effectKey, entry.translations.effectName());
                 translationBuilder.add(effectKey + ".description", entry.translations.effectDescription());
 
@@ -68,7 +67,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
                 translationBuilder.add(lingeringPotionKey, "Lingering Potion of " + entry.translations.effectName());
             }
             for (var entry: Enchantments.entries) {
-                var key = Util.createTranslationKey("enchantment", entry.id());
+                var key = Util.makeDescriptionId("enchantment", entry.id());
                 translationBuilder.add(key, entry.name());
                 translationBuilder.add(key + ".description", entry.description());
             }
@@ -76,7 +75,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class ParticlesGen extends SimpleParticleGenerator {
-        public ParticlesGen(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+        public ParticlesGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -119,7 +118,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class SoundGen extends SimpleSoundGeneratorV2 {
-        public SoundGen(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+        public SoundGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -144,34 +143,34 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
         }
 
         public static Entry CRITICAL_CHANCE = add(new Entry(
-            Identifier.of(CriticalStrikeMod.ID, "chance"),
+            Identifier.fromNamespaceAndPath(CriticalStrikeMod.ID, "chance"),
             "Critical Hit", "Increase chance to deal critical hits."
         ));
 
         public static Entry CRITICAL_DAMAGE = add(new Entry(
-            Identifier.of(CriticalStrikeMod.ID, "damage"),
+            Identifier.fromNamespaceAndPath(CriticalStrikeMod.ID, "damage"),
             "Critical Impact", "Increase damage dealt by critical hits."
         ));
 
-        private static Identifier mutexTagId = Identifier.of(CriticalStrikeMod.ID, "critical_enchantments");
+        private static Identifier mutexTagId = Identifier.fromNamespaceAndPath(CriticalStrikeMod.ID, "critical_enchantments");
     }
 
     public static class EnchantmentTagGen extends FabricTagProvider<Enchantment> {
-        public EnchantmentTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-            super(output, RegistryKeys.ENCHANTMENT, registriesFuture);
+        public EnchantmentTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+            super(output, Registries.ENCHANTMENT, registriesFuture);
         }
 
         @Override
-        protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-            var tagKey = TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId);
+        protected void addTags(HolderLookup.Provider wrapperLookup) {
+            var tagKey = TagKey.create(Registries.ENCHANTMENT, Enchantments.mutexTagId);
             builder(tagKey)
-                    .addOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id))
-                    .addOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id));
+                    .addOptional(ResourceKey.create(Registries.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id))
+                    .addOptional(ResourceKey.create(Registries.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id));
 
             var nonTreasureTagKey = EnchantmentTags.NON_TREASURE;
             builder(nonTreasureTagKey)
-                    .addOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id))
-                    .addOptional(RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id));
+                    .addOptional(ResourceKey.create(Registries.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id))
+                    .addOptional(ResourceKey.create(Registries.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id));
         }
 
         @Override
@@ -180,15 +179,15 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
         }
     }
 
-    public static final Identifier CRITICAL_WEAPON_ENCHANTABLE = Identifier.of(CriticalStrikeMod.ID, "enchantable/weapon");
+    public static final Identifier CRITICAL_WEAPON_ENCHANTABLE = Identifier.fromNamespaceAndPath(CriticalStrikeMod.ID, "enchantable/weapon");
     public static class ItemTagGen extends FabricTagProvider<Item> {
-        public ItemTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-            super(output, RegistryKeys.ITEM, registriesFuture);
+        public ItemTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+            super(output, Registries.ITEM, registriesFuture);
         }
 
         @Override
-        protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-            var tagKey = TagKey.of(RegistryKeys.ITEM, CRITICAL_WEAPON_ENCHANTABLE);
+        protected void addTags(HolderLookup.Provider wrapperLookup) {
+            var tagKey = TagKey.create(Registries.ITEM, CRITICAL_WEAPON_ENCHANTABLE);
             builder(tagKey)
                     .addOptionalTag(ItemTags.WEAPON_ENCHANTABLE)
                     .addOptionalTag(ItemTags.BOW_ENCHANTABLE)
@@ -202,64 +201,64 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class EnchantmentGenerator extends FabricDynamicRegistryProvider {
-        public EnchantmentGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+        public EnchantmentGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 
         @Override
-        protected void configure(RegistryWrapper.WrapperLookup registries, Entries entries) {
-            RegistryEntryLookup<Item> itemLookup = registries.getOrThrow(RegistryKeys.ITEM);
-            RegistryEntryLookup<Enchantment> enchantmentLookup = registries.getOrThrow(RegistryKeys.ENCHANTMENT);
+        protected void configure(HolderLookup.Provider registries, Entries entries) {
+            HolderGetter<Item> itemLookup = registries.lookupOrThrow(Registries.ITEM);
+            HolderGetter<Enchantment> enchantmentLookup = registries.lookupOrThrow(Registries.ENCHANTMENT);
 
             // Critical Strike enchantment - increases critical hit chance
-            var criticalStrikeId = RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id());
-            Enchantment.Builder criticalStrike = Enchantment.builder(
+            var criticalStrikeId = ResourceKey.create(Registries.ENCHANTMENT, Enchantments.CRITICAL_CHANCE.id());
+            Enchantment.Builder criticalStrike = Enchantment.enchantment(
                     Enchantment.definition(
-                            itemLookup.getOrThrow(TagKey.of(RegistryKeys.ITEM, CRITICAL_WEAPON_ENCHANTABLE)),
+                            itemLookup.getOrThrow(TagKey.create(Registries.ITEM, CRITICAL_WEAPON_ENCHANTABLE)),
                             5, // weight (rarity) - 5 is uncommon
                             5, // max level
-                            Enchantment.leveledCost(3, 12), // min cost
-                            Enchantment.leveledCost(12, 11), // max cost
+                            Enchantment.dynamicCost(3, 12), // min cost
+                            Enchantment.dynamicCost(12, 11), // max cost
                             1, // anvil cost
-                            AttributeModifierSlot.MAINHAND)
+                            EquipmentSlotGroup.MAINHAND)
             )
-            .addEffect(
-                    EnchantmentEffectComponentTypes.ATTRIBUTES,
-                    new AttributeEnchantmentEffect(
-                            Identifier.of(Enchantments.CRITICAL_CHANCE.id().getNamespace(),
+            .withEffect(
+                    EnchantmentEffectComponents.ATTRIBUTES,
+                    new EnchantmentAttributeEffect(
+                            Identifier.fromNamespaceAndPath(Enchantments.CRITICAL_CHANCE.id().getNamespace(),
                                     "enchantment_" + Enchantments.CRITICAL_CHANCE.id.getPath()),
                             CriticalStrikeAttributes.CHANCE.attributeEntry,
-                            EnchantmentLevelBasedValue.linear(0.04F),
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+                            LevelBasedValue.perLevel(0.04F),
+                            AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
             )
-            .exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)))
+            .exclusiveWith(enchantmentLookup.getOrThrow(TagKey.create(Registries.ENCHANTMENT, Enchantments.mutexTagId)))
             ;
-            entries.add(criticalStrikeId, criticalStrike.build(criticalStrikeId.getValue()));
+            entries.add(criticalStrikeId, criticalStrike.build(criticalStrikeId.identifier()));
 
 
-            var criticalDamageId = RegistryKey.of(RegistryKeys.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id());
-            Enchantment.Builder criticalDamage = Enchantment.builder(
+            var criticalDamageId = ResourceKey.create(Registries.ENCHANTMENT, Enchantments.CRITICAL_DAMAGE.id());
+            Enchantment.Builder criticalDamage = Enchantment.enchantment(
                         Enchantment.definition(
-                                itemLookup.getOrThrow(TagKey.of(RegistryKeys.ITEM, CRITICAL_WEAPON_ENCHANTABLE)),
+                                itemLookup.getOrThrow(TagKey.create(Registries.ITEM, CRITICAL_WEAPON_ENCHANTABLE)),
                                 5, // weight (rarity) - 5 is uncommon
                                 5, // max level
-                                Enchantment.leveledCost(3, 12), // min cost
-                                Enchantment.leveledCost(12, 11), // max cost
+                                Enchantment.dynamicCost(3, 12), // min cost
+                                Enchantment.dynamicCost(12, 11), // max cost
                                 1, // anvil cost
-                                AttributeModifierSlot.MAINHAND)
+                                EquipmentSlotGroup.MAINHAND)
                 )
-                .addEffect(
-                        EnchantmentEffectComponentTypes.ATTRIBUTES,
-                        new AttributeEnchantmentEffect(
-                                Identifier.of(Enchantments.CRITICAL_DAMAGE.id().getNamespace(),
+                .withEffect(
+                        EnchantmentEffectComponents.ATTRIBUTES,
+                        new EnchantmentAttributeEffect(
+                                Identifier.fromNamespaceAndPath(Enchantments.CRITICAL_DAMAGE.id().getNamespace(),
                                         "enchantment_" + Enchantments.CRITICAL_DAMAGE.id.getPath()),
                                 CriticalStrikeAttributes.DAMAGE.attributeEntry,
-                                EnchantmentLevelBasedValue.linear(0.1F),
-                                EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+                                LevelBasedValue.perLevel(0.1F),
+                                AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
                 )
-                .exclusiveSet(enchantmentLookup.getOrThrow(TagKey.of(RegistryKeys.ENCHANTMENT, Enchantments.mutexTagId)))
+                .exclusiveWith(enchantmentLookup.getOrThrow(TagKey.create(Registries.ENCHANTMENT, Enchantments.mutexTagId)))
                 ;
-            entries.add(criticalDamageId, criticalDamage.build(criticalDamageId.getValue()));
+            entries.add(criticalDamageId, criticalDamage.build(criticalDamageId.identifier()));
         }
 
         @Override

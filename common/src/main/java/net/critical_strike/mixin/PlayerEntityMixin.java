@@ -7,38 +7,38 @@ import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.api.CriticalStrikeAttributes;
 import net.critical_strike.internal.CritLogic;
 import net.critical_strike.internal.CriticalStriker;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public abstract class PlayerEntityMixin implements CriticalStriker {
 
     @Inject(
-            method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;",
+            method = "createAttributes()Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;",
             require = 1, allow = 1, at = @At("RETURN")
     )
-    private static void addAttributes(final CallbackInfoReturnable<DefaultAttributeContainer.Builder> info) {
+    private static void addAttributes(final CallbackInfoReturnable<AttributeSupplier.Builder> info) {
         for (var entry : CriticalStrikeAttributes.all) {
             info.getReturnValue().add(entry.attributeEntry);
         }
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void onConstructed(World world, GameProfile gameProfile, CallbackInfo ci) {
+    private void onConstructed(Level world, GameProfile gameProfile, CallbackInfo ci) {
         for (var entry : CriticalStrikeAttributes.all) {
             if (entry.innateModifier != null) {
-                ((PlayerEntity)(Object)this)
+                ((Player)(Object)this)
                         .getAttributes()
-                        .getCustomInstance(entry.attributeEntry)
-                        .addPersistentModifier(entry.innateModifier);
+                        .getInstance(entry.attributeEntry)
+                        .addPermanentModifier(entry.innateModifier);
             }
         }
     }
@@ -46,13 +46,13 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
     private int critical_chance_time = 0;
     private boolean critical_strike_active = false;
     public boolean rng_shouldDealCriticalHit() {
-        var player = (PlayerEntity)(Object)this;
+        var player = (Player)(Object)this;
 
         if (CriticalStrikeMod.config.value.enable_critical_strike_batching) {
-            if (critical_chance_time != player.age) {
+            if (critical_chance_time != player.tickCount) {
                 var chance = rng_criticalChance();
                 critical_strike_active = player.getRandom().nextFloat() < chance;
-                critical_chance_time = player.age;
+                critical_chance_time = player.tickCount;
             }
             return critical_strike_active;
         } else {
@@ -62,13 +62,13 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
     }
 
     public double rng_criticalChance() {
-        var player = (PlayerEntity)(Object)this;
+        var player = (Player)(Object)this;
         var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);
         return CriticalStrikeAttributes.CHANCE.asChance(value);
     }
 
     public double rng_criticalDamageMultiplier() {
-        var player = (PlayerEntity)(Object)this;
+        var player = (Player)(Object)this;
         var value = player.getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry);
         return CriticalStrikeAttributes.DAMAGE.asMultiplier(value);
     }
@@ -81,10 +81,10 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
             method = "attack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;isCriticalHit(Lnet/minecraft/entity/Entity;)Z"
+                    target = "Lnet/minecraft/world/entity/player/Player;canCriticalAttack(Lnet/minecraft/world/entity/Entity;)Z"
             )
     )
-    private boolean disableVanillaCrit(PlayerEntity instance, Entity target, Operation<Boolean> original) {
+    private boolean disableVanillaCrit(Player instance, Entity target, Operation<Boolean> original) {
         if (CriticalStrikeMod.config.value.disable_vanilla_jump_criticals) {
             return false;
         }
@@ -95,7 +95,7 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
             method = "attack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
+                    target = "Lnet/minecraft/world/entity/Entity;hurtOrSimulate(Lnet/minecraft/world/damagesource/DamageSource;F)Z"
             )
     )
     private boolean applyCriticalStrikeDamage(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {
@@ -103,8 +103,8 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
         if (!config.enable_melee_criticals) {
             return original.call(instance, source, amount);
         }
-        var attacker = (PlayerEntity)(Object)this;
-        if (config.require_weapon_for_critical_strikes && !CritLogic.isWeapon(attacker.getMainHandStack())) {
+        var attacker = (Player)(Object)this;
+        if (config.require_weapon_for_critical_strikes && !CritLogic.isWeapon(attacker.getMainHandItem())) {
             return original.call(instance, source, amount);
         }
 

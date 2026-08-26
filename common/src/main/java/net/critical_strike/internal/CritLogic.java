@@ -3,19 +3,19 @@ package net.critical_strike.internal;
 import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.api.CriticalDamageSource;
 import net.critical_strike.fx.CriticalStrikeSounds;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public class CritLogic {
     public static boolean isWeapon(ItemStack itemStack) {
-        var attributes = itemStack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        var attributes = itemStack.get(DataComponents.ATTRIBUTE_MODIFIERS);
         if (attributes == null || attributes.modifiers() == null || attributes.modifiers().isEmpty()) {
             return false;
         }
@@ -27,10 +27,10 @@ public class CritLogic {
         return false;
     }
 
-    private static boolean isHand(AttributeModifierSlot slot) {
-        return slot == AttributeModifierSlot.MAINHAND
-                || slot == AttributeModifierSlot.OFFHAND
-                || slot == AttributeModifierSlot.HAND;
+    private static boolean isHand(EquipmentSlotGroup slot) {
+        return slot == EquipmentSlotGroup.MAINHAND
+                || slot == EquipmentSlotGroup.OFFHAND
+                || slot == EquipmentSlotGroup.HAND;
     }
 
     public record Result(DamageSource source, float amount) {}
@@ -45,12 +45,12 @@ public class CritLogic {
     }
 
     public static void playFxAt(Entity target, float volume) {
-        var world = target.getEntityWorld();
-        if (world instanceof ServerWorld serverWorld) {
-            serverWorld.getChunkManager().sendToNearbyPlayers(target, new EntityAnimationS2CPacket(target, CriticalStrikeMod.CRIT_PACKET_CODE));
+        var world = target.level();
+        if (world instanceof ServerLevel serverWorld) {
+            serverWorld.getChunkSource().sendToTrackingPlayersAndSelf(target, new ClientboundAnimatePacket(target, CriticalStrikeMod.CRIT_PACKET_CODE));
             var pitch = 0.9F + (world.getRandom().nextFloat() * 0.2F);
             world.playSound(null, target.getX(), target.getY(), target.getZ(),
-                    CriticalStrikeSounds.CRITICAL_HIT.soundEvent(), SoundCategory.PLAYERS, volume, pitch);
+                    CriticalStrikeSounds.CRITICAL_HIT.soundEvent(), SoundSource.PLAYERS, volume, pitch);
         }
         // world.playSoundFromEntity(entity, CriticalStrikeSounds.CRITICAL_HIT.soundEvent(), SoundCategory.PLAYERS, 1.0f, 1.0f);
     }

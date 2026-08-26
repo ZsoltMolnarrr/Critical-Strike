@@ -2,15 +2,15 @@ package net.critical_strike.api;
 
 import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.internal.CustomStatusEffect;
-import net.minecraft.entity.attribute.ClampedEntityAttribute;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -31,17 +31,17 @@ public class CriticalStrikeAttributes {
     public static class Entry {
         public final Identifier id;
         public final String translationKey;
-        public final EntityAttribute attribute;
+        public final Attribute attribute;
         public final double baseValue;
-        @Nullable public RegistryEntry<EntityAttribute> attributeEntry;
-        @Nullable public EntityAttributeModifier innateModifier;
+        @Nullable public Holder<Attribute> attributeEntry;
+        @Nullable public AttributeModifier innateModifier;
         @Nullable public Translations translations;
 
         public Entry(String name, double minValue, double baseValue, boolean tracked) {
-            this.id = Identifier.of(NAMESPACE, name);
+            this.id = Identifier.fromNamespaceAndPath(NAMESPACE, name);
             this.translationKey = "attribute.name." + NAMESPACE + "." + name;
-            this.attribute = new ClampedEntityAttribute(translationKey, baseValue, minValue, 2048)
-                    .setTracked(tracked);
+            this.attribute = new RangedAttribute(translationKey, baseValue, minValue, 2048)
+                    .setSyncable(tracked);
             this.baseValue = baseValue;
         }
 
@@ -55,17 +55,17 @@ public class CriticalStrikeAttributes {
 
         public void register() {
             if (attributeEntry != null) { return; }
-            attributeEntry = Registry.registerReference(Registries.ATTRIBUTE, id, attribute);
+            attributeEntry = Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, id, attribute);
         }
 
-        public Entry innateModifier(EntityAttributeModifier.Operation operation, float value) {
-            innateModifier = new EntityAttributeModifier(AttributeIdentifiers.INNATE_BONUS, value, operation);
+        public Entry innateModifier(AttributeModifier.Operation operation, float value) {
+            innateModifier = new AttributeModifier(AttributeIdentifiers.INNATE_BONUS, value, operation);
             return this;
         }
 
         public void setInnateBonus(float bonus) {
             if (this.innateModifier != null) {
-                this.innateModifier = new EntityAttributeModifier(innateModifier.id(), bonus, innateModifier.operation());
+                this.innateModifier = new AttributeModifier(innateModifier.id(), bonus, innateModifier.operation());
             }
         }
 
@@ -74,10 +74,10 @@ public class CriticalStrikeAttributes {
             return this;
         }
 
-        @Nullable private StatusEffect statusEffect = null;
-        @Nullable public RegistryEntry<StatusEffect> effectEntry = null;
+        @Nullable private MobEffect statusEffect = null;
+        @Nullable public Holder<MobEffect> effectEntry = null;
         public Entry effect(int color) {
-            this.statusEffect = new CustomStatusEffect(StatusEffectCategory.BENEFICIAL, color);
+            this.statusEffect = new CustomStatusEffect(MobEffectCategory.BENEFICIAL, color);
             return this;
         }
         public void setEffectBonus(float bonus) {
@@ -85,26 +85,26 @@ public class CriticalStrikeAttributes {
                 this.statusEffect.addAttributeModifier(this.attributeEntry,
                         AttributeIdentifiers.EFFECT_BONUS,
                         bonus,
-                        EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                        AttributeModifier.Operation.ADD_MULTIPLIED_BASE
                 );
             }
         }
         public void registerEffect() {
             if (this.statusEffect != null) {
-                this.effectEntry = Registry.registerReference(Registries.STATUS_EFFECT, id, this.statusEffect);
+                this.effectEntry = Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, id, this.statusEffect);
             }
         }
         public Identifier potionId() {
-            return Identifier.of(id.getNamespace(), id.getNamespace() + "_" + id.getPath());
+            return Identifier.fromNamespaceAndPath(id.getNamespace(), id.getNamespace() + "_" + id.getPath());
         }
     }
 
     public static final Entry CHANCE = entry("chance", 100, 100, false)
             .translations("Critical Hit Chance", "Critical Hit", "Increases the chance to deal critical hits.")
-            .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.05F)
+            .innateModifier(AttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.05F)
             .effect(0xF400FF);
     public static final Entry DAMAGE = entry("damage", 100, 100, false)
             .translations("Critical Hit Damage", "Critical Impact", "Increases the damage dealt by critical hits.")
-            .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.5F)
+            .innateModifier(AttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.5F)
             .effect(0x800000);
 }
