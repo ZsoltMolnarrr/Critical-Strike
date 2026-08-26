@@ -1,7 +1,11 @@
 package net.critical_strike.client.particle;
 
 import net.critical_strike.fx.CriticalStrikeParticles;
-import net.minecraft.client.particle.*;
+import net.minecraft.client.particle.BillboardParticle;
+import net.minecraft.client.particle.BillboardParticleSubmittable;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleFactory;
+import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
