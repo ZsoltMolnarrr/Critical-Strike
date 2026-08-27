@@ -2,7 +2,7 @@ package net.critical_strike.fabric.datagen;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -16,9 +16,9 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class SimpleSoundGeneratorV2 implements DataProvider {
     private final CompletableFuture<HolderLookup.Provider> registryLookup;
-    protected final FabricDataOutput dataOutput;
+    protected final FabricPackOutput dataOutput;
 
-    public SimpleSoundGeneratorV2(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+    public SimpleSoundGeneratorV2(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
         this.dataOutput = dataOutput;
         this.registryLookup = registryLookup;
     }
@@ -77,7 +77,12 @@ public abstract class SimpleSoundGeneratorV2 implements DataProvider {
         return "Simple Sound Entry Generator";
     }
 
+    /// `sounds.json` sits at the namespace root, i.e. the `PathProvider` "kind" would be empty --
+    /// and since 26.1.2 `PathProvider#file` builds `kind + "/" + path`, so an empty kind yields an
+    /// absolute `/sounds.json`. Resolve the path against the output folder directly instead.
     private Path getFilePath(String namespace) {
-        return this.dataOutput.createPathProvider(PackOutput.Target.RESOURCE_PACK, "").json(Identifier.fromNamespaceAndPath(namespace, "sounds"));
+        return this.dataOutput.getOutputFolder(PackOutput.Target.RESOURCE_PACK)
+                .resolve(namespace)
+                .resolve("sounds.json");
     }
 }

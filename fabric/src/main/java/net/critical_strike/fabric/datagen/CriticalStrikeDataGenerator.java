@@ -6,10 +6,10 @@ import net.critical_strike.fx.CriticalStrikeParticles;
 import net.critical_strike.fx.CriticalStrikeSounds;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -43,7 +43,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class LangGenerator extends FabricLanguageProvider {
-        protected LangGenerator(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+        protected LangGenerator(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, "en_us", registryLookup);
         }
 
@@ -75,7 +75,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class ParticlesGen extends SimpleParticleGenerator {
-        public ParticlesGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+        public ParticlesGen(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -118,7 +118,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class SoundGen extends SimpleSoundGeneratorV2 {
-        public SoundGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+        public SoundGen(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -155,8 +155,8 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
         private static Identifier mutexTagId = Identifier.fromNamespaceAndPath(CriticalStrikeMod.ID, "critical_enchantments");
     }
 
-    public static class EnchantmentTagGen extends FabricTagProvider<Enchantment> {
-        public EnchantmentTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public static class EnchantmentTagGen extends FabricTagsProvider<Enchantment> {
+        public EnchantmentTagGen(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, Registries.ENCHANTMENT, registriesFuture);
         }
 
@@ -180,8 +180,8 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static final Identifier CRITICAL_WEAPON_ENCHANTABLE = Identifier.fromNamespaceAndPath(CriticalStrikeMod.ID, "enchantable/weapon");
-    public static class ItemTagGen extends FabricTagProvider<Item> {
-        public ItemTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public static class ItemTagGen extends FabricTagsProvider<Item> {
+        public ItemTagGen(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, Registries.ITEM, registriesFuture);
         }
 
@@ -201,7 +201,7 @@ public class CriticalStrikeDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class EnchantmentGenerator extends FabricDynamicRegistryProvider {
-        public EnchantmentGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+        public EnchantmentGenerator(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 

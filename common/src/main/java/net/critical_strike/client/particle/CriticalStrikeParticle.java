@@ -7,7 +7,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -86,11 +86,11 @@ public class CriticalStrikeParticle extends SingleQuadParticle  {
     }
 
     @Override
-    public int getLightColor(float tint) {
+    protected int getLightCoords(float tint) {
         if (glows) {
             return 255;
         } else {
-            return super.getLightColor(tint);
+            return super.getLightCoords(tint);
         }
     }
 
@@ -204,7 +204,7 @@ public class CriticalStrikeParticle extends SingleQuadParticle  {
                 particle.followEntity = appearance.entityFollowed;
             }
 
-            float j = clientWorld.random.nextFloat() * 0.4F + 0.6F;
+            float j = clientWorld.getRandom().nextFloat() * 0.4F + 0.6F;
             particle.setColor(particle.rCol * j, particle.gCol * j, particle.bCol * j);
 
             return particle;

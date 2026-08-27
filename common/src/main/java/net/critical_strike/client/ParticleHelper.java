@@ -26,9 +26,9 @@ public class ParticleHelper {
             var spark = resolveParticleType(CriticalStrikeParticles.SPARKLE.id(), color, null);
             for (int i = 0; i < config.particle_spark_count; i++) {
                 var speed = config.particle_spark_speed;
-                var velocity = new Vec3(1F,0,0).yRot(clientWorld.random.nextFloat() * 360F)
-                        .xRot(clientWorld.random.nextFloat() * 360F)
-                        .scale(speed + clientWorld.random.nextFloat() * (speed * 0.5F));
+                var velocity = new Vec3(1F,0,0).yRot(clientWorld.getRandom().nextFloat() * 360F)
+                        .xRot(clientWorld.getRandom().nextFloat() * 360F)
+                        .scale(speed + clientWorld.getRandom().nextFloat() * (speed * 0.5F));
                 clientWorld.addParticle(spark, true, false,
                         originX, originY, originZ,
                         velocity.x, velocity.y, velocity.z);
@@ -40,7 +40,7 @@ public class ParticleHelper {
 
             var skull = resolveParticleType(CriticalStrikeParticles.SKULL.id(), color, target);
             for (int i = 0; i < config.particle_skull_count; i+=2 ) {
-                var offset = new Vec3(width,0,0).yRot(clientWorld.random.nextFloat() * 360F);
+                var offset = new Vec3(width,0,0).yRot(clientWorld.getRandom().nextFloat() * 360F);
                 var velocity = new Vec3(0, 0.1F,0);
                 clientWorld.addParticle(skull, true, false,
                         originX + offset.x, originY + offset.y, originZ + offset.z,
