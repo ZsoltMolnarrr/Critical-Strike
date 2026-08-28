@@ -4,6 +4,8 @@ public class Config {
     public boolean require_weapon_for_critical_strikes = true;
     public boolean disable_vanilla_jump_criticals = true;
     public boolean enable_melee_criticals = true;
+    // Stab attacks are the 26.1 piercing/kinetic weapon melee path, separate from regular swings.
+    public boolean enable_stab_criticals = true;
     public boolean enable_ranged_criticals = true;
     public boolean enable_critical_strike_batching = false;
     public float sound_melee_crit_volume = 0.6F;
