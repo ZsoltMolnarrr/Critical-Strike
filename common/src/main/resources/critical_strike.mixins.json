@@ -8,7 +8,6 @@
   ],
   "mixins": [
     "DamageSourceMixin",
-    "LivingEntityMixin",
     "PersistentProjectileEntityMixin",
     "PlayerEntityMixin",
     "registry.EntityAttributesMixin",
