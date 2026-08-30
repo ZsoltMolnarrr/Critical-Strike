@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Attributes.class)
 public class EntityAttributesMixin {
     @Inject(method = "<clinit>", at = @At("TAIL"))
-    private static void static_tail_RangedWeaponAPI(CallbackInfo ci) {
+    private static void static_tail_CriticalStrike(CallbackInfo ci) {
         for (var entry: CriticalStrikeAttributes.all) {
             entry.register();
         }

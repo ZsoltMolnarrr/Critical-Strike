@@ -46,8 +46,8 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
         }
     }
 
-    private int critical_chance_time = 0;
-    private boolean critical_strike_active = false;
+    @Unique private int critical_chance_time = 0;
+    @Unique private boolean critical_strike_active = false;
     public boolean rng_shouldDealCriticalHit() {
         var player = (Player)(Object)this;
 

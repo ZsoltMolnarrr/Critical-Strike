@@ -41,6 +41,11 @@ public class CritLogic {
             ((CriticalDamageSource)source).rng_setCriticalDamageMultiplier(bonusMultiplier);
             return new Result(source, amount * bonusMultiplier);
         }
+        // Clear the stamp on the non-crit path too. Every vanilla path hands us a freshly allocated
+        // `DamageSource` per hit, but a third-party `Item#getItemDamageSource` may return a cached
+        // instance - without this reset a single earlier crit would keep reading back as critical
+        // (`rng_isCritical()` is `multiplier != 0F`) for every later hit made with that source.
+        ((CriticalDamageSource)source).rng_setCriticalDamageMultiplier(0F);
         return null;
     }
 
