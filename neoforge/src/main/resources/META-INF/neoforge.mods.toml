@@ -11,7 +11,7 @@ authors = "Daedelus"
 description = '''
 Chance based critical hits for melee and ranged attacks!
 '''
-logoFile = "icon.png"
+iconFile = "icon.png"
 
 [[dependencies.critical_strike]]
 modId = "neoforge"
