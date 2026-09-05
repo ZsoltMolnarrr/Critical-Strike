@@ -1,6 +1,8 @@
 # 1.0.5
 
-Minecraft 1.21.11 support
+- Minecraft 26.1.2 support (Java 25)
+- Jars are no longer remapped: the shipped jar is the shaded platform jar
+- Critical strikes on stab attacks of piercing weapons (config: `enable_stab_criticals`)
 
 # 1.0.4
 
