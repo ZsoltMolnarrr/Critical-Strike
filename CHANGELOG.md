@@ -1,3 +1,7 @@
+# 1.0.4.001
+
+Port to Minecraft 1.20.1 (Fabric + Forge 47). Enchantments are Java classes on this line; the enchantment level bonus is applied at query time inside the crit logic instead of as an attribute modifier.
+
 # 1.0.4
 
 Require weapons to hold for melee critical strikes to occur

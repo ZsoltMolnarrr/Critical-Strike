@@ -1,18 +1,17 @@
-package net.critical_strike.mixin.registry;
+package net.critical_strike.fabric.mixin;
 
-import net.critical_strike.api.CriticalStrikeAttributes;
+import net.critical_strike.CriticalStrikeMod;
 import net.minecraft.entity.attribute.EntityAttributes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(EntityAttributes.class)
+/** Fabric only: Forge registers through RegisterEvent instead (see ForgeMod). */
+@Mixin(value = EntityAttributes.class, priority = 10000)
 public class EntityAttributesMixin {
     @Inject(method = "<clinit>", at = @At("TAIL"))
-    private static void static_tail_RangedWeaponAPI(CallbackInfo ci) {
-        for (var entry: CriticalStrikeAttributes.all) {
-            entry.register();
-        }
+    private static void static_tail_CriticalStrike(CallbackInfo ci) {
+        CriticalStrikeMod.registerAttributes();
     }
 }

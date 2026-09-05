@@ -5,47 +5,43 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
 import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.api.CriticalStrikeAttributes;
+import net.critical_strike.api.CriticalStrikeEnchantments;
 import net.critical_strike.internal.CritLogic;
 import net.critical_strike.internal.CriticalStriker;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * Crit rolls + vanilla jump-crit suppression for players.
+ * <p>
+ * The default-attribute injection (`createPlayerAttributes` RETURN) lives in the Fabric-only mixin set;
+ * Forge attaches the attributes through EntityAttributeModificationEvent instead.
+ */
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin implements CriticalStriker {
 
-    @Inject(
-            method = "createPlayerAttributes()Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;",
-            require = 1, allow = 1, at = @At("RETURN")
-    )
-    private static void addAttributes(final CallbackInfoReturnable<DefaultAttributeContainer.Builder> info) {
-        for (var entry : CriticalStrikeAttributes.all) {
-            info.getReturnValue().add(entry.attributeEntry);
-        }
-    }
-
     @Inject(method = "<init>", at = @At("TAIL"))
     private void onConstructed(World world, BlockPos pos, float yaw, GameProfile gameProfile, CallbackInfo ci) {
+        var player = (PlayerEntity)(Object)this;
         for (var entry : CriticalStrikeAttributes.all) {
-            if (entry.innateModifier != null) {
-                ((PlayerEntity)(Object)this)
-                        .getAttributes()
-                        .getCustomInstance(entry.attributeEntry)
-                        .addPersistentModifier(entry.innateModifier);
-            }
+            if (entry.innateModifier == null) continue;
+            var instance = player.getAttributes().getCustomInstance(entry.attribute);
+            if (instance == null) continue; // attribute not attached to this container
+            if (instance.getModifier(entry.innateModifier.getId()) != null) continue;
+            instance.addPersistentModifier(entry.innateModifier);
         }
     }
 
-    private int critical_chance_time = 0;
-    private boolean critical_strike_active = false;
+    @Unique private int critical_chance_time = 0;
+    @Unique private boolean critical_strike_active = false;
     public boolean rng_shouldDealCriticalHit() {
         var player = (PlayerEntity)(Object)this;
 
@@ -64,17 +60,22 @@ public abstract class PlayerEntityMixin implements CriticalStriker {
 
     public double rng_criticalChance() {
         var player = (PlayerEntity)(Object)this;
-        var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);
-        return CriticalStrikeAttributes.CHANCE.asChance(value);
+        var value = player.getAttributeValue(CriticalStrikeAttributes.CHANCE.attribute);
+        return CriticalStrikeAttributes.CHANCE.asChance(value)
+                + CriticalStrikeEnchantments.bonus(CriticalStrikeEnchantments.CHANCE, player);
     }
 
     public double rng_criticalDamageMultiplier() {
         var player = (PlayerEntity)(Object)this;
-        var value = player.getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry);
-        return CriticalStrikeAttributes.DAMAGE.asMultiplier(value);
+        var value = player.getAttributeValue(CriticalStrikeAttributes.DAMAGE.attribute);
+        return CriticalStrikeAttributes.DAMAGE.asMultiplier(value)
+                + CriticalStrikeEnchantments.bonus(CriticalStrikeEnchantments.DAMAGE, player);
     }
 
 
+    // Vanilla jump-crit condition is `... && this.fallDistance > 0.0F && !this.isOnGround() && ...`;
+    // forcing isOnGround() true disables it (same wrap as the 1.21 line, which also covers the later
+    // sweep-attack isOnGround() check in the same method).
     @WrapOperation(
             method = "attack",
             at = @At(

@@ -1,38 +1,61 @@
 package net.critical_strike.client.particle;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.brigadier.StringReader;
+import com.mojang.serialization.Codec;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
+import net.minecraft.registry.Registries;
 
+/**
+ * A particle type that is also its own (parameter-less on the wire) particle effect, carrying a client-side
+ * {@link Appearance} that is never serialized. 1.20.1 shape: {@code Codec} + {@code ParticleEffect.Factory}
+ * + {@code write(PacketByteBuf)} / {@code asString()} (the 1.21 MapCodec/PacketCodec pair does not exist here).
+ */
 public class TemplateParticleType extends ParticleType<TemplateParticleType> implements ParticleEffect, TemplateParticleEffect {
-    private final MapCodec<TemplateParticleType> codec = MapCodec.unit(this::getType);
-    private final PacketCodec<RegistryByteBuf, TemplateParticleType> packetCodec = PacketCodec.unit(this);
+    private static final ParticleEffect.Factory<TemplateParticleType> PARAMETER_FACTORY = new ParticleEffect.Factory<>() {
+        @Override
+        public TemplateParticleType read(ParticleType<TemplateParticleType> particleType, StringReader stringReader) {
+            return (TemplateParticleType) particleType;
+        }
 
+        @Override
+        public TemplateParticleType read(ParticleType<TemplateParticleType> particleType, PacketByteBuf packetByteBuf) {
+            return (TemplateParticleType) particleType;
+        }
+    };
+
+    private final Codec<TemplateParticleType> codec = Codec.unit(this::getType);
+
+    /** The registered instance; copies made for per-spawn appearance point back to it. */
     private TemplateParticleType type;
     public TemplateParticleType() {
         this(true);
     }
 
     public TemplateParticleType(boolean alwaysShow) {
-        super(alwaysShow);
+        super(alwaysShow, PARAMETER_FACTORY);
         this.type = this;
     }
 
+    @Override
     public TemplateParticleType getType() {
         return this.type;
     }
 
     @Override
-    public MapCodec<TemplateParticleType> getCodec() {
+    public Codec<TemplateParticleType> getCodec() {
         return this.codec;
     }
 
     @Override
-    public PacketCodec<? super RegistryByteBuf, TemplateParticleType> getPacketCodec() {
-        return packetCodec;
+    public void write(PacketByteBuf buf) {
+    }
+
+    @Override
+    public String asString() {
+        return Registries.PARTICLE_TYPE.getId(this.type).toString();
     }
 
 

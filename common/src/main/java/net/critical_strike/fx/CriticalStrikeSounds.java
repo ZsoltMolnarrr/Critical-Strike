@@ -23,7 +23,7 @@ public class CriticalStrikeSounds {
         }
 
         public Entry(String name) {
-            this(Identifier.of(CriticalStrikeMod.ID, name));
+            this(new Identifier(CriticalStrikeMod.ID, name));
         }
 
         public Entry(Identifier id) {
@@ -73,9 +73,10 @@ public class CriticalStrikeSounds {
 
     public static final Entry CRITICAL_HIT = add(new Entry("critical_hit").variants(2));
 
+    /** Idempotent: safe to call from both the Fabric mod initializer and the Forge RegisterEvent. */
     public static void register() {
         for (var entry: entries) {
-            entry.entry = Registry.registerReference(Registries.SOUND_EVENT, entry.id(), entry.soundEvent());
+            entry.register();
         }
     }
 }

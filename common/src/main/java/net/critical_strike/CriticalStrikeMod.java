@@ -1,6 +1,8 @@
 package net.critical_strike;
 
 import net.critical_strike.api.CriticalStrikeAttributes;
+import net.critical_strike.api.CriticalStrikeEnchantments;
+import net.critical_strike.fx.CriticalStrikeParticles;
 import net.critical_strike.fx.CriticalStrikeSounds;
 import net.critical_strike.internal.Config;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -20,6 +22,10 @@ public final class CriticalStrikeMod {
 
     public static final int CRIT_PACKET_CODE = 43;
 
+    /**
+     * Config refresh + config-driven tuning. Registration-independent, so it may run before or after
+     * the register* functions (Fabric: after the clinit mixins; Forge: mod constructor, before RegisterEvent).
+     */
     public static void init() {
         config.refresh();
         CriticalStrikeAttributes.CHANCE.setInnateBonus(config.value.attribute_crit_chance_innate_bonus);
@@ -28,8 +34,15 @@ public final class CriticalStrikeMod {
         CriticalStrikeAttributes.DAMAGE.setEffectBonus(config.value.effect_crit_damage_per_level);
     }
 
-    public static void registerSounds() {
-        CriticalStrikeSounds.register();
+    // MARK: Registration
+    // All of these are idempotent. Fabric drives attributes/effects/potions from <clinit>-TAIL mixins on
+    // EntityAttributes/StatusEffects/Potions and the rest from the mod initializer; Forge drives every one
+    // of them from RegisterEvent (vanilla registries are locked outside that window on Forge 47).
+
+    public static void registerAttributes() {
+        for (var entry: CriticalStrikeAttributes.all) {
+            entry.register();
+        }
     }
 
     public static void registerEffects() {
@@ -40,10 +53,24 @@ public final class CriticalStrikeMod {
 
     public static void registerPotions() {
         for (var entry: CriticalStrikeAttributes.all) {
-            if (entry.effectEntry == null) continue;
-            var potion = new Potion(new StatusEffectInstance(entry.effectEntry, 3600,
-                    0, false, true));
-            Registry.register(Registries.POTION, entry.potionId(), potion);
+            var effect = entry.statusEffect();
+            if (effect == null) continue;
+            var potionId = entry.potionId();
+            if (Registries.POTION.containsId(potionId)) continue;
+            var potion = new Potion(new StatusEffectInstance(effect, 3600, 0, false, true));
+            Registry.register(Registries.POTION, potionId, potion);
         }
+    }
+
+    public static void registerEnchantments() {
+        CriticalStrikeEnchantments.register();
+    }
+
+    public static void registerSounds() {
+        CriticalStrikeSounds.register();
+    }
+
+    public static void registerParticles() {
+        CriticalStrikeParticles.register();
     }
 }

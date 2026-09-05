@@ -2,7 +2,7 @@ package net.critical_strike.fx;
 
 import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.client.particle.TemplateParticleType;
-import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -30,30 +30,31 @@ public class CriticalStrikeParticles {
         }
     }
 
-    private static class Helper extends SimpleParticleType {
+    /** {@link DefaultParticleType}'s constructor is protected; this is the 1.20.1 name of SimpleParticleType. */
+    private static class Helper extends DefaultParticleType {
         protected Helper(boolean alwaysShow) {
             super(alwaysShow);
         }
     }
-    private static SimpleParticleType createSimple() {
+    private static DefaultParticleType createSimple() {
         return new Helper(false);
     }
 
     public record Texture(Identifier id, int frames) {
         public static Texture vanilla(String name) {
-            return new Texture(Identifier.ofVanilla(name), 1);
+            return new Texture(new Identifier("minecraft", name), 1);
         }
         public static Texture vanilla(String name, int frames) {
-            return new Texture(Identifier.ofVanilla(name), frames);
+            return new Texture(new Identifier("minecraft", name), frames);
         }
         public static Texture of(String name) {
-            return new Texture(Identifier.of(CriticalStrikeMod.ID, name), 1);
+            return new Texture(new Identifier(CriticalStrikeMod.ID, name), 1);
         }
     }
 
-    public record Entry(Identifier id, Texture texture, SimpleParticleType particleType) {
+    public record Entry(Identifier id, Texture texture, DefaultParticleType particleType) {
         public Entry(String name, Texture texture) {
-            this(Identifier.of(CriticalStrikeMod.ID, name), texture);
+            this(new Identifier(CriticalStrikeMod.ID, name), texture);
         }
         public Entry(Identifier id, Texture texture) {
             this(id, texture, createSimple());
@@ -68,7 +69,7 @@ public class CriticalStrikeParticles {
     // Template particle entries
     public record TemplateEntry(Identifier id, Texture texture, TemplateParticleType particleType, Behaviour behaviour) {
         public TemplateEntry(String name, Texture texture, Behaviour behaviour) {
-            this(Identifier.of(CriticalStrikeMod.ID, name), texture, new TemplateParticleType(), behaviour);
+            this(new Identifier(CriticalStrikeMod.ID, name), texture, new TemplateParticleType(), behaviour);
         }
     }
 
@@ -99,11 +100,14 @@ public class CriticalStrikeParticles {
                 .overlayScale(0.95F)
     ));
 
+    /** Idempotent: safe to call from both the Fabric mod initializer and the Forge RegisterEvent. */
     public static void register() {
         for (var entry : ENTRIES) {
+            if (Registries.PARTICLE_TYPE.containsId(entry.id)) continue;
             Registry.register(Registries.PARTICLE_TYPE, entry.id, entry.particleType);
         }
         for (var entry : TEMPLATE_ENTRIES) {
+            if (Registries.PARTICLE_TYPE.containsId(entry.id)) continue;
             Registry.register(Registries.PARTICLE_TYPE, entry.id, entry.particleType);
         }
     }

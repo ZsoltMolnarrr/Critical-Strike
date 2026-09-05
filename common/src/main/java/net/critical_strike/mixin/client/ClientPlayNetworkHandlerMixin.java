@@ -19,7 +19,7 @@ public class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onEntityAnimation", at = @At("TAIL"))
     private void crit_onEntityAnimation_TAIL(EntityAnimationS2CPacket packet, CallbackInfo ci) {
         if (packet.getAnimationId() == CriticalStrikeMod.CRIT_PACKET_CODE) {
-            Entity entity = world.getEntityById(packet.getEntityId());
+            Entity entity = world.getEntityById(packet.getId());
             if (entity != null) {
                 ParticleHelper.spawnCritParticles(entity);
             }

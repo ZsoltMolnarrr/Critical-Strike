@@ -33,12 +33,13 @@ public class CriticalStrikeAttributes {
         public final String translationKey;
         public final EntityAttribute attribute;
         public final double baseValue;
+        /** Populated by {@link #register()}; null until the attribute registry has been populated. */
         @Nullable public RegistryEntry<EntityAttribute> attributeEntry;
         @Nullable public EntityAttributeModifier innateModifier;
         @Nullable public Translations translations;
 
         public Entry(String name, double minValue, double baseValue, boolean tracked) {
-            this.id = Identifier.of(NAMESPACE, name);
+            this.id = new Identifier(NAMESPACE, name);
             this.translationKey = "attribute.name." + NAMESPACE + "." + name;
             this.attribute = new ClampedEntityAttribute(translationKey, baseValue, minValue, 2048)
                     .setTracked(tracked);
@@ -53,19 +54,24 @@ public class CriticalStrikeAttributes {
             return (float) ((attributeValue - baseValue) / baseValue);
         }
 
+        /** Idempotent: safe to call from both the Fabric clinit mixin and the Forge RegisterEvent. */
         public void register() {
             if (attributeEntry != null) { return; }
             attributeEntry = Registry.registerReference(Registries.ATTRIBUTE, id, attribute);
         }
 
         public Entry innateModifier(EntityAttributeModifier.Operation operation, float value) {
-            innateModifier = new EntityAttributeModifier(AttributeIdentifiers.INNATE_BONUS, value, operation);
+            innateModifier = new EntityAttributeModifier(
+                    AttributeIdentifiers.INNATE_BONUS_UUID,
+                    AttributeIdentifiers.name(AttributeIdentifiers.INNATE_BONUS),
+                    value, operation);
             return this;
         }
 
         public void setInnateBonus(float bonus) {
             if (this.innateModifier != null) {
-                this.innateModifier = new EntityAttributeModifier(innateModifier.id(), bonus, innateModifier.operation());
+                this.innateModifier = new EntityAttributeModifier(
+                        innateModifier.getId(), innateModifier.getName(), bonus, innateModifier.getOperation());
             }
         }
 
@@ -75,36 +81,45 @@ public class CriticalStrikeAttributes {
         }
 
         @Nullable private StatusEffect statusEffect = null;
+        /** Populated by {@link #registerEffect()}; null until the status effect registry has been populated. */
         @Nullable public RegistryEntry<StatusEffect> effectEntry = null;
         public Entry effect(int color) {
             this.statusEffect = new CustomStatusEffect(StatusEffectCategory.BENEFICIAL, color);
             return this;
         }
+        @Nullable public StatusEffect statusEffect() {
+            return statusEffect;
+        }
+        /**
+         * (Re)configures the potion effect's modifier. Keyed by attribute inside the effect, so calling it
+         * again after a config refresh replaces the previous amount. Does not require registration.
+         */
         public void setEffectBonus(float bonus) {
-            if (this.statusEffect != null && this.attributeEntry != null) {
-                this.statusEffect.addAttributeModifier(this.attributeEntry,
-                        AttributeIdentifiers.EFFECT_BONUS,
+            if (this.statusEffect != null) {
+                this.statusEffect.addAttributeModifier(this.attribute,
+                        AttributeIdentifiers.EFFECT_BONUS_UUID.toString(),
                         bonus,
-                        EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                        EntityAttributeModifier.Operation.MULTIPLY_BASE
                 );
             }
         }
+        /** Idempotent, see {@link #register()}. */
         public void registerEffect() {
-            if (this.statusEffect != null) {
+            if (this.statusEffect != null && this.effectEntry == null) {
                 this.effectEntry = Registry.registerReference(Registries.STATUS_EFFECT, id, this.statusEffect);
             }
         }
         public Identifier potionId() {
-            return Identifier.of(id.getNamespace(), id.getNamespace() + "_" + id.getPath());
+            return new Identifier(id.getNamespace(), id.getNamespace() + "_" + id.getPath());
         }
     }
 
     public static final Entry CHANCE = entry("chance", 100, 100, false)
             .translations("Critical Hit Chance", "Critical Hit", "Increases the chance to deal critical hits.")
-            .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.05F)
+            .innateModifier(EntityAttributeModifier.Operation.MULTIPLY_BASE, 0.05F)
             .effect(0xF400FF);
     public static final Entry DAMAGE = entry("damage", 100, 100, false)
             .translations("Critical Hit Damage", "Critical Impact", "Increases the damage dealt by critical hits.")
-            .innateModifier(EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.5F)
+            .innateModifier(EntityAttributeModifier.Operation.MULTIPLY_BASE, 0.5F)
             .effect(0x800000);
 }

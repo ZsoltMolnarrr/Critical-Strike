@@ -13,6 +13,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class CriticalStrikeParticle extends SpriteBillboardParticle  {
     private static final Random RANDOM = Random.create();
@@ -48,7 +49,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
             case ASCEND -> {
                 this.velocityMultiplier = 0.96F;
                 this.gravityStrength = -0.1F;
-                this.ascending = true;
+                this.field_28787 = true; // `ascending` in newer Yarn
                 this.velocityY *= 0.2;
                 if (velocityX == 0.0 && velocityZ == 0.0) {
                     this.velocityX *= 0.10000000149011612;
@@ -129,7 +130,7 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
             this.alpha = 0F;
         }
 
-        super.buildGeometry(vertexConsumer, camera, tickDelta);
+        renderQuad(vertexConsumer, camera, tickDelta, Vec3d.ZERO);
 
         var red = this.red;
         var green = this.green;
@@ -141,9 +142,11 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
         this.blue = 1F;
         this.scale = this.scale * overlayScale;
 
-        geometryForOverlay = true;
-        super.buildGeometry(vertexConsumer, camera, tickDelta);
-        geometryForOverlay = false;
+        // Bringing z position slightly closer for overlay pass to prevent z-fighting
+        var cameraLook = Vec3d.fromPolar(0, camera.getYaw());
+        var overlayOffset = cameraLook.normalize().multiply(0.01);
+        renderQuad(vertexConsumer, camera, tickDelta, overlayOffset);
+
         this.red = red;
         this.green = green;
         this.blue = blue;
@@ -152,23 +155,44 @@ public class CriticalStrikeParticle extends SpriteBillboardParticle  {
         lastRendered = currentAge;
     }
 
-
-    private boolean geometryForOverlay = false;
-    @Override
-    protected void method_60373(VertexConsumer vertexConsumer, Camera camera, Quaternionf quaternionf, float f) {
-        Vec3d vec3d = camera.getPos();
-
-        // Bringing z position slightly closer for overlay pass to prevent z-fighting
-        Vec3d overlayOffset = new Vec3d(0.0, 0.0, 0.0);
-        if (geometryForOverlay) {
-            var cameraLook = Vec3d.fromPolar(0, camera.getYaw());
-            overlayOffset = cameraLook.normalize().multiply(0.01);
+    /**
+     * {@link net.minecraft.client.particle.BillboardParticle#buildGeometry} with a horizontal position
+     * offset (1.20.1 has no separate position/vertex hook to override, unlike 1.21's method_60373/60374).
+     */
+    private void renderQuad(VertexConsumer vertexConsumer, Camera camera, float tickDelta, Vec3d offset) {
+        Vec3d cameraPos = camera.getPos();
+        float f = (float)(MathHelper.lerp((double)tickDelta, this.prevPosX, this.x) - cameraPos.getX() - offset.getX());
+        float g = (float)(MathHelper.lerp((double)tickDelta, this.prevPosY, this.y) - cameraPos.getY());
+        float h = (float)(MathHelper.lerp((double)tickDelta, this.prevPosZ, this.z) - cameraPos.getZ() - offset.getZ());
+        Quaternionf quaternionf;
+        if (this.angle == 0.0F) {
+            quaternionf = camera.getRotation();
+        } else {
+            quaternionf = new Quaternionf(camera.getRotation());
+            quaternionf.rotateZ(MathHelper.lerp(tickDelta, this.prevAngle, this.angle));
         }
 
-        float g = (float)(MathHelper.lerp((double)f, this.prevPosX, this.x) - vec3d.getX() - overlayOffset.getX());
-        float h = (float)(MathHelper.lerp((double)f, this.prevPosY, this.y) - vec3d.getY());
-        float i = (float)(MathHelper.lerp((double)f, this.prevPosZ, this.z) - vec3d.getZ() - overlayOffset.getZ());
-        this.method_60374(vertexConsumer, quaternionf, g, h, i, f);
+        Vector3f[] corners = new Vector3f[]{
+                new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
+        };
+        float size = this.getSize(tickDelta);
+
+        for (int j = 0; j < 4; j++) {
+            Vector3f corner = corners[j];
+            corner.rotate(quaternionf);
+            corner.mul(size);
+            corner.add(f, g, h);
+        }
+
+        float minU = this.getMinU();
+        float maxU = this.getMaxU();
+        float minV = this.getMinV();
+        float maxV = this.getMaxV();
+        int light = this.getBrightness(tickDelta);
+        vertexConsumer.vertex(corners[0].x(), corners[0].y(), corners[0].z()).texture(maxU, maxV).color(this.red, this.green, this.blue, this.alpha).light(light).next();
+        vertexConsumer.vertex(corners[1].x(), corners[1].y(), corners[1].z()).texture(maxU, minV).color(this.red, this.green, this.blue, this.alpha).light(light).next();
+        vertexConsumer.vertex(corners[2].x(), corners[2].y(), corners[2].z()).texture(minU, minV).color(this.red, this.green, this.blue, this.alpha).light(light).next();
+        vertexConsumer.vertex(corners[3].x(), corners[3].y(), corners[3].z()).texture(minU, maxV).color(this.red, this.green, this.blue, this.alpha).light(light).next();
     }
 
     // MARK: Factories

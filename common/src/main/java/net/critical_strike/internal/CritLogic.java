@@ -3,9 +3,8 @@ package net.critical_strike.internal;
 import net.critical_strike.CriticalStrikeMod;
 import net.critical_strike.api.CriticalDamageSource;
 import net.critical_strike.fx.CriticalStrikeSounds;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
@@ -14,23 +13,16 @@ import net.minecraft.sound.SoundCategory;
 import org.jetbrains.annotations.Nullable;
 
 public class CritLogic {
+    /**
+     * "Is a weapon" = carries any attribute modifier for a hand slot (1.21: ATTRIBUTE_MODIFIERS component
+     * with a MAINHAND/OFFHAND/HAND slot; 1.20.1: the per-slot modifier multimap, item defaults or NBT).
+     */
     public static boolean isWeapon(ItemStack itemStack) {
-        var attributes = itemStack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
-        if (attributes == null || attributes.modifiers() == null || attributes.modifiers().isEmpty()) {
+        if (itemStack.isEmpty()) {
             return false;
         }
-        for (var modifier: attributes.modifiers()) {
-            if (isHand(modifier.slot())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isHand(AttributeModifierSlot slot) {
-        return slot == AttributeModifierSlot.MAINHAND
-                || slot == AttributeModifierSlot.OFFHAND
-                || slot == AttributeModifierSlot.HAND;
+        return !itemStack.getAttributeModifiers(EquipmentSlot.MAINHAND).isEmpty()
+                || !itemStack.getAttributeModifiers(EquipmentSlot.OFFHAND).isEmpty();
     }
 
     public record Result(DamageSource source, float amount) {}
@@ -52,6 +44,5 @@ public class CritLogic {
             world.playSound(null, target.getX(), target.getY(), target.getZ(),
                     CriticalStrikeSounds.CRITICAL_HIT.soundEvent(), SoundCategory.PLAYERS, volume, pitch);
         }
-        // world.playSoundFromEntity(entity, CriticalStrikeSounds.CRITICAL_HIT.soundEvent(), SoundCategory.PLAYERS, 1.0f, 1.0f);
     }
 }

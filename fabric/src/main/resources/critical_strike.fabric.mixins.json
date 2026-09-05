@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "net.critical_strike.fabric.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "mixins": [
+    "EntityAttributesMixin",
+    "PlayerEntityAttributesMixin",
+    "PotionsMixin",
+    "StatusEffectsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

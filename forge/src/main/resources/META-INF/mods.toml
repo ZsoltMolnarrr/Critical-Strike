@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[4,)"
+loaderVersion = "[47,)"
 issueTrackerURL = "https://github.com/ZsoltMolnarrr/Critical-Strike/issues"
 license = "GPL-3.0"
 
@@ -14,18 +14,15 @@ Chance based critical hits for melee and ranged attacks!
 logoFile = "icon.png"
 
 [[dependencies.critical_strike]]
-modId = "neoforge"
-type = "required"
-versionRange = "[21.1,)"
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.critical_strike]]
 modId = "minecraft"
-type = "required"
-versionRange = "[${minecraft_compat_version},)"
+mandatory = true
+versionRange = "[1.20.1,)"
 ordering = "NONE"
 side = "BOTH"
-
-[[mixins]]
-config = "critical_strike.mixins.json"
