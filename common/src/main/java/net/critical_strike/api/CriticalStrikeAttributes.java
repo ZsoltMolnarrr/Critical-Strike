@@ -33,7 +33,11 @@ public class CriticalStrikeAttributes {
         public final String translationKey;
         public final EntityAttribute attribute;
         public final double baseValue;
-        /** Populated by {@link #register()}; null until the attribute registry has been populated. */
+        /**
+         * Populated by {@link #register()}; null until the attribute registry has been populated.
+         * Nothing in the mod or its consumers reads it, so the Forge path (which registers through
+         * RegisterEvent's helper, not {@link #register()}) does not populate it and it stays null there.
+         */
         @Nullable public RegistryEntry<EntityAttribute> attributeEntry;
         @Nullable public EntityAttributeModifier innateModifier;
         @Nullable public Translations translations;
@@ -54,7 +58,7 @@ public class CriticalStrikeAttributes {
             return (float) ((attributeValue - baseValue) / baseValue);
         }
 
-        /** Idempotent: safe to call from both the Fabric clinit mixin and the Forge RegisterEvent. */
+        /** Fabric path (clinit mixin); idempotent. Forge registers through RegisterEvent's helper instead. */
         public void register() {
             if (attributeEntry != null) { return; }
             attributeEntry = Registry.registerReference(Registries.ATTRIBUTE, id, attribute);
@@ -81,7 +85,7 @@ public class CriticalStrikeAttributes {
         }
 
         @Nullable private StatusEffect statusEffect = null;
-        /** Populated by {@link #registerEffect()}; null until the status effect registry has been populated. */
+        /** Populated by {@link #registerEffect()}; null on Forge for the same reason as {@link #attributeEntry}. */
         @Nullable public RegistryEntry<StatusEffect> effectEntry = null;
         public Entry effect(int color) {
             this.statusEffect = new CustomStatusEffect(StatusEffectCategory.BENEFICIAL, color);
@@ -103,7 +107,7 @@ public class CriticalStrikeAttributes {
                 );
             }
         }
-        /** Idempotent, see {@link #register()}. */
+        /** Fabric path, see {@link #register()}. */
         public void registerEffect() {
             if (this.statusEffect != null && this.effectEntry == null) {
                 this.effectEntry = Registry.registerReference(Registries.STATUS_EFFECT, id, this.statusEffect);

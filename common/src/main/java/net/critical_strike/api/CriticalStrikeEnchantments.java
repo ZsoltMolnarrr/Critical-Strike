@@ -86,7 +86,7 @@ public class CriticalStrikeEnchantments {
                 || item instanceof CrossbowItem;
     }
 
-    /** Idempotent: safe to call from both the Fabric mod initializer and the Forge RegisterEvent. */
+    /** Fabric path (mod initializer); idempotent. Forge registers through RegisterEvent's helper instead. */
     public static void register() {
         for (var entry : entries) {
             if (Registries.ENCHANTMENT.containsId(entry.id)) { continue; }

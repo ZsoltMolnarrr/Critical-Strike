@@ -9,7 +9,11 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
 import net.tiny_config.ConfigManager;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public final class CriticalStrikeMod {
     public static final String ID = "critical_strike";
@@ -35,9 +39,13 @@ public final class CriticalStrikeMod {
     }
 
     // MARK: Registration
-    // All of these are idempotent. Fabric drives attributes/effects/potions from <clinit>-TAIL mixins on
-    // EntityAttributes/StatusEffects/Potions and the rest from the mod initializer; Forge drives every one
-    // of them from RegisterEvent (vanilla registries are locked outside that window on Forge 47).
+    // All of these are idempotent, and all of them are the *Fabric* path: attributes/effects/potions come
+    // from the <clinit>-TAIL mixins on EntityAttributes/StatusEffects/Potions, the rest from the mod
+    // initializer. Forge does NOT call them — a plain `Registry.register` throws "Can not register to a
+    // locked registry" on Forge 47.0-47.3 and NeoForge 1.20.1 even inside the RegisterEvent window (only
+    // 47.4.0+ clears the vanilla registry's own lock), so ForgeMod registers the same content itself through
+    // the helper RegisterEvent hands out. The content each pass iterates is public, so nothing is shared
+    // beyond it.
 
     public static void registerAttributes() {
         for (var entry: CriticalStrikeAttributes.all) {
@@ -51,14 +59,29 @@ public final class CriticalStrikeMod {
         }
     }
 
-    public static void registerPotions() {
+    private static Map<Identifier, Potion> potionsToRegister = null;
+
+    /**
+     * Builds every potion the mod adds, keyed by the id it registers under. Creation only — nothing is
+     * registered here, so a loader that registers potions itself iterates this map instead of duplicating the
+     * construction. Built once; repeated calls return the same map.
+     */
+    public static Map<Identifier, Potion> potionsToRegister() {
+        if (potionsToRegister != null) { return potionsToRegister; }
+        var potions = new LinkedHashMap<Identifier, Potion>();
         for (var entry: CriticalStrikeAttributes.all) {
             var effect = entry.statusEffect();
             if (effect == null) continue;
-            var potionId = entry.potionId();
-            if (Registries.POTION.containsId(potionId)) continue;
-            var potion = new Potion(new StatusEffectInstance(effect, 3600, 0, false, true));
-            Registry.register(Registries.POTION, potionId, potion);
+            potions.put(entry.potionId(), new Potion(new StatusEffectInstance(effect, 3600, 0, false, true)));
+        }
+        potionsToRegister = potions;
+        return potionsToRegister;
+    }
+
+    public static void registerPotions() {
+        for (var entry: potionsToRegister().entrySet()) {
+            if (Registries.POTION.containsId(entry.getKey())) continue;
+            Registry.register(Registries.POTION, entry.getKey(), entry.getValue());
         }
     }
 

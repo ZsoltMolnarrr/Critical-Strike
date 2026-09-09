@@ -73,7 +73,7 @@ public class CriticalStrikeSounds {
 
     public static final Entry CRITICAL_HIT = add(new Entry("critical_hit").variants(2));
 
-    /** Idempotent: safe to call from both the Fabric mod initializer and the Forge RegisterEvent. */
+    /** Fabric path (mod initializer); idempotent. Forge registers through RegisterEvent's helper instead. */
     public static void register() {
         for (var entry: entries) {
             entry.register();

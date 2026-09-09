@@ -100,7 +100,7 @@ public class CriticalStrikeParticles {
                 .overlayScale(0.95F)
     ));
 
-    /** Idempotent: safe to call from both the Fabric mod initializer and the Forge RegisterEvent. */
+    /** Fabric path (mod initializer); idempotent. Forge registers through RegisterEvent's helper instead. */
     public static void register() {
         for (var entry : ENTRIES) {
             if (Registries.PARTICLE_TYPE.containsId(entry.id)) continue;
