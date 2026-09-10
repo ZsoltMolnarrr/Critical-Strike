@@ -1,6 +1,6 @@
-# 1.0.4.001
+# 1.0.4+1.20.1
 
-Port to Minecraft 1.20.1 (Fabric + Forge 47). Enchantments are Java classes on this line; the enchantment level bonus is applied at query time inside the crit logic instead of as an attribute modifier.
+Port to Minecraft 1.20.1 (Fabric + Forge 47)
 
 # 1.0.4
 
