@@ -12,7 +12,7 @@ dependencies {
     // Forge production jar needs (SRG names at runtime). Fabric Loader bundles the runtime.
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
 
-    // TinyConfig from mavenLocal (published by the TinyConfig 1.20.1-modern port). The common module
-    // compiles against the fabric flavour, same as the 1.21.1 line did with the Modrinth artifact.
-    modImplementation "net.tiny_config:tiny_config-fabric:${rootProject.tiny_config_version}"
+    // TinyConfig from the Modrinth maven. The common module compiles against the fabric flavour
+    // (Modrinth only serves the per-loader jars; there is no `-common` artifact).
+    modImplementation "maven.modrinth:tiny-config:${rootProject.tiny_config_version}-fabric"
 }

@@ -42,7 +42,7 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
 
-    include(modImplementation("net.tiny_config:tiny_config-${platform}:${rootProject.tiny_config_version}"))
+    include(modImplementation("maven.modrinth:tiny-config:${rootProject.tiny_config_version}-${platform}"))
 }
 
 processResources {

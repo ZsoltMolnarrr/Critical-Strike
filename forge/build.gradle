@@ -52,7 +52,7 @@ dependencies {
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionForge')
 
-    include(modImplementation("net.tiny_config:tiny_config-${platform}:${rootProject.tiny_config_version}"))
+    include(modImplementation("maven.modrinth:tiny-config:${rootProject.tiny_config_version}-${platform}"))
 }
 
 processResources {
