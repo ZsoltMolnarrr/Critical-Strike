@@ -1,3 +1,7 @@
+# 1.0.6
+
+- Fix crash when returning from the End (duplicate innate attribute modifier)
+
 # 1.0.5
 
 Minecraft 1.21.11 support
