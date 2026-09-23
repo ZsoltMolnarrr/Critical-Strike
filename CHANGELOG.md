@@ -1,5 +1,6 @@
 # 1.0.6
 
+- Minecraft 26.3 support
 - Fix crash when returning from the End (duplicate innate attribute modifier)
 
 # 1.0.5
